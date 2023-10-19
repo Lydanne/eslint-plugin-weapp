@@ -13,7 +13,8 @@ npm i eslint --save-dev
 Next, install `eslint-plugin-weapp`:
 
 ```sh
-npm install eslint-plugin-weapp --save-dev
+npm install eslint eslint-plugin-weapp --save-dev
+# pnpm install eslint eslint-plugin-weapp --save-dev
 ```
 
 ## Usage
@@ -22,27 +23,20 @@ Add `weapp` to the plugins section of your `.eslintrc` configuration file. You c
 
 ```json
 {
-    "plugins": [
-        "weapp"
-    ]
-}
-```
-
-
-Then configure the rules you want to use under the rules section.
-
-```json
-{
-    "rules": {
-        "weapp/rule-name": 2
-    }
+  "extends": ["eslint:recommended", "plugin:weapp2/recommended"]
 }
 ```
 
 ## Rules
 
 <!-- begin auto-generated rules list -->
-TODO: Run eslint-doc-generator to generate the rules list.
+
+💼 Configurations enabled in.\
+✅ Set in the `recommended` configuration.\
+🔧 Automatically fixable by the [`--fix` CLI option](https://eslint.org/docs/user-guide/command-line-interface#--fix).
+
+| Name                                 | Description                        | 💼  | 🔧  |
+| :----------------------------------- | :--------------------------------- | :-- | :-- |
+| [component](docs/rules/component.md) | 检查组件的 properties 属性是否规范 | ✅  | 🔧  |
+
 <!-- end auto-generated rules list -->
-
-
