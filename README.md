@@ -1,4 +1,4 @@
-# eslint-plugin-weapp
+# eslint-plugin-weapp2
 
 a weapp eslint
 
@@ -10,11 +10,11 @@ You'll first need to install [ESLint](https://eslint.org/):
 npm i eslint --save-dev
 ```
 
-Next, install `eslint-plugin-weapp`:
+Next, install `eslint-plugin-weapp2`:
 
 ```sh
-npm install eslint eslint-plugin-weapp --save-dev
-# pnpm install eslint eslint-plugin-weapp --save-dev
+npm install eslint eslint-plugin-weapp2 --save-dev
+# pnpm install eslint eslint-plugin-weapp2 --save-dev
 ```
 
 ## Usage
