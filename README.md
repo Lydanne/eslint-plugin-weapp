@@ -44,7 +44,24 @@ If you're still on ESLint 8, you can keep using `.eslintrc`:
 }
 ```
 
-To use this plugin from Oxlint, add it under `jsPlugins`:
+To use this plugin from Oxlint with the bundled preset, create `oxlint.config.ts`:
+
+```ts
+import { defineConfig } from "oxlint";
+import weapp2OxlintPreset from "eslint-plugin-weapp2/oxlint";
+
+export default defineConfig({
+  ...weapp2OxlintPreset,
+});
+```
+
+The preset includes:
+
+- `jsPlugins: ["eslint-plugin-weapp2"]`
+- weapp globals such as `Component` and `wx`
+- the plugin rule plus the matching Oxlint core rule overrides
+
+If you prefer a JSON config, add this plugin manually under `jsPlugins`:
 
 ```json
 {
