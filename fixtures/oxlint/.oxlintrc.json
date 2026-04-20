@@ -1,0 +1,8 @@
+{
+  "jsPlugins": [
+    "../../lib/index.js"
+  ],
+  "rules": {
+    "weapp2/component": "error"
+  }
+}

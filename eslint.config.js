@@ -5,7 +5,7 @@ const globals = require("globals");
 
 module.exports = [
   {
-    ignores: ["examples/**", "node_modules/**"],
+    ignores: ["examples/**", "fixtures/**", "node_modules/**"],
   },
   js.configs.recommended,
   {

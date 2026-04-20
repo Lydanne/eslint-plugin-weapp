@@ -44,6 +44,17 @@ If you're still on ESLint 8, you can keep using `.eslintrc`:
 }
 ```
 
+To use this plugin from Oxlint, add it under `jsPlugins`:
+
+```json
+{
+  "jsPlugins": ["eslint-plugin-weapp2"],
+  "rules": {
+    "weapp2/component": "error"
+  }
+}
+```
+
 ## Rules
 
 <!-- begin auto-generated rules list -->
