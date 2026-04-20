@@ -1,6 +1,6 @@
 {
   "name": "eslint-plugin-weapp2",
-  "version": "0.0.3",
+  "version": "1.0.0",
   "description": "a weapp eslint",
   "keywords": [
     "eslint",
@@ -35,7 +35,7 @@
     "oxlint": "^1.60.0"
   },
   "engines": {
-    "node": "^14.17.0 || ^16.0.0 || >= 18.0.0"
+    "node": "^20.19.0 || >= 22.12.0"
   },
   "peerDependencies": {
     "eslint": "^8.57.0 || ^9.0.0 || ^10.0.0"
