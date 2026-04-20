@@ -1,20 +1,100 @@
-const { RuleTester } = require('eslint');
-const { readFileSync } = require('fs');
+const { RuleTester } = require("eslint");
+const rule = require("../../../lib/rules/component");
 
-// console.log(code);
-const ruleTester = new RuleTester();
+const ruleTester = new RuleTester({
+  languageOptions: {
+    ecmaVersion: "latest",
+    sourceType: "module",
+  },
+});
 
-ruleTester.run("component", require('../../../lib/rules/component.js'), {
+ruleTester.run("component", rule, {
   valid: [
     {
-      code: readFileSync('./examples/component-valid.js', 'utf8'),
-    }
+      code: `
+        Component({
+          properties: {
+            src: Object,
+            size: String,
+            customStyle: {
+              type: String,
+            },
+          },
+        });
+      `,
+    },
   ],
 
   invalid: [
     {
-      code: readFileSync('./examples/component-invalid.js', 'utf8'),
-      errors: [{ message: "组件的 properties 属性中的 xxxx 的值必须是 Object 类型" }]
+      code: `
+        Component({
+          properties: {
+            title: "",
+          },
+        });
+      `,
+      output: `
+        Component({
+          properties: {
+            title: { type: String, value: "" },
+          },
+        });
+      `,
+      errors: [{ messageId: "literalType" }],
+    },
+    {
+      code: `
+        Component({
+          properties: {
+            config: {},
+          },
+        });
+      `,
+      output: `
+        Component({
+          properties: {
+            config: { type: Object, value: {} },
+          },
+        });
+      `,
+      errors: [{ messageId: "emptyObject" }],
+    },
+    {
+      code: `
+        Component({
+          properties: {
+            options: {
+              value: {},
+            },
+          },
+        });
+      `,
+      output: `
+        Component({
+          properties: {
+            options: { type: Object, value: {} },
+          },
+        });
+      `,
+      errors: [{ messageId: "missingType" }],
+    },
+    {
+      code: `
+        Component({
+          properties: {
+            list: [],
+          },
+        });
+      `,
+      output: `
+        Component({
+          properties: {
+            list: { type: Array, value: [] },
+          },
+        });
+      `,
+      errors: [{ messageId: "arrayValue" }],
     },
   ]
 });

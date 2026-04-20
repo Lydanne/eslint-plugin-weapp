@@ -6,9 +6,11 @@ description: 检查组件配置。
 since: v7.1.0
 ---
 
-# 检查组件的 properties 属性是否规范 (`weapp2/component`)
+# weapp2/component
 
-💼 This rule is enabled in the ✅ `recommended` config.
+📝 检查组件的 properties 属性是否规范.
+
+💼 This rule is enabled in the following configs: 🧊 `flat/recommended`, ✅ `recommended`.
 
 🔧 This rule is automatically fixable by the [`--fix` CLI option](https://eslint.org/docs/latest/user-guide/command-line-interface#--fix).
 
@@ -18,4 +20,4 @@ since: v7.1.0
 
 - :wrench: The `--fix` option on the [command line](https://eslint.org/docs/user-guide/command-line-interface#fixing-problems) can automatically fix some of the problems reported by this rule.
 
-检查组件的配置问题，比如 properties 的类型定义不能将类型写为直面量。
+检查组件的配置问题，比如 properties 的类型定义不能将类型写为字面量。

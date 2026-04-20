@@ -19,7 +19,24 @@ npm install eslint eslint-plugin-weapp2 --save-dev
 
 ## Usage
 
-Add `weapp` to the plugins section of your `.eslintrc` configuration file. You can omit the `eslint-plugin-` prefix:
+For ESLint 9 and ESLint 10, use a flat config file:
+
+```js
+const { defineConfig } = require("eslint/config");
+const weapp2 = require("eslint-plugin-weapp2");
+
+module.exports = defineConfig([
+  {
+    files: ["**/*.{js,mjs,cjs}"],
+    plugins: {
+      weapp2,
+    },
+    extends: ["weapp2/recommended"],
+  },
+]);
+```
+
+If you're still on ESLint 8, you can keep using `.eslintrc`:
 
 ```json
 {
@@ -32,11 +49,12 @@ Add `weapp` to the plugins section of your `.eslintrc` configuration file. You c
 <!-- begin auto-generated rules list -->
 
 💼 Configurations enabled in.\
+🧊 Set in the `flat/recommended` configuration.\
 ✅ Set in the `recommended` configuration.\
 🔧 Automatically fixable by the [`--fix` CLI option](https://eslint.org/docs/user-guide/command-line-interface#--fix).
 
-| Name                                 | Description                        | 💼  | 🔧  |
-| :----------------------------------- | :--------------------------------- | :-- | :-- |
-| [component](docs/rules/component.md) | 检查组件的 properties 属性是否规范 | ✅  | 🔧  |
+| Name                                 | Description             | 💼   | 🔧 |
+| :----------------------------------- | :---------------------- | :--- | :- |
+| [component](docs/rules/component.md) | 检查组件的 properties 属性是否规范 | 🧊 ✅ | 🔧 |
 
 <!-- end auto-generated rules list -->
