@@ -1,0 +1,5 @@
+var noop = function () {};
+
+module.exports = {
+  noop: noop,
+};

@@ -100,6 +100,18 @@ module.exports = [
 - 继续参与 **动态跳转** 检查：`wx.navigateTo({ url: '@/pages/detail/detail' })` 会先展开别名再校验存在性与分包边界。
 - 未解析的 alias（如 `@/not-exist`）仍报 `notResolved`，报告里携带原始 `request`（例如 `"@/not-exist"`）。
 
+### 什么地方 **不** 展开 alias
+
+原生微信小程序中，`resolveAlias` 只在 **JS（`.js` / `.ts` / `.mjs` / `.cjs`）** 编译阶段生效。其它文件类型写 `@/...` 小程序会编译失败：
+
+| 文件类型 | 本插件的行为 |
+| :--- | :--- |
+| `.js` / `.ts` | 展开 alias ✅ |
+| `.wxs` | 不展开，命中即报 `aliasNotSupportedInWxs`（见此规则） |
+| `.wxml` | 不展开，由 `weapp2/wxml-import` 报 `aliasNotSupported` |
+| `.wxss` | 不展开，由 `weapp2/wxss-import` 报 `aliasNotSupported` |
+| `.json` | 不展开，由 `weapp2/json-import` 报 `aliasNotSupported` |
+
 ## 示例
 
 以下示例假设 `app.json` 的 `subpackages` 含有 `subA`、`subB`（普通分包）与 `subInd`（`independent: true`）。

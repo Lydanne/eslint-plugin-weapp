@@ -81,9 +81,12 @@ If you prefer a JSON config, add this plugin manually under `jsPlugins`:
 ✅ Set in the `recommended` configuration.\
 🔧 Automatically fixable by the [`--fix` CLI option](https://eslint.org/docs/user-guide/command-line-interface#--fix).
 
-| Name                                 | Description                                | 💼   | 🔧 |
-| :----------------------------------- | :----------------------------------------- | :--- | :- |
-| [component](docs/rules/component.md) | 检查组件的 properties 属性是否规范         | 🧊 ✅ | 🔧 |
-| [import](docs/rules/import.md)       | 基于 app.json 校验引用路径 / 分包边界 / 动态跳转 | 🧊 ✅ |    |
+| Name                                       | Description                                              | 💼   | 🔧 |
+| :----------------------------------------- | :------------------------------------------------------- | :--- | :- |
+| [component](docs/rules/component.md)       | 检查组件的 properties 属性是否规范                       | 🧊 ✅ | 🔧 |
+| [import](docs/rules/import.md)             | 基于 app.json 校验 JS/WXS 的引用路径 / 分包边界 / 动态跳转 | 🧊 ✅ |    |
+| [json-import](docs/rules/json-import.md)   | 基于 app.json 校验 JSON（usingComponents / pages 等）的路径（需 `@eslint/json`） |      |    |
+| [wxss-import](docs/rules/wxss-import.md)   | 基于 app.json 校验 WXSS 的 @import 路径（需 `@eslint/css`） |      |    |
+| [wxml-import](docs/rules/wxml-import.md)   | 基于 app.json 校验 WXML 中 `<import>` / `<include>` / `<wxs>` 的 `src`（内置 `weapp2/wxml` 语言） |      |    |
 
 <!-- end auto-generated rules list -->

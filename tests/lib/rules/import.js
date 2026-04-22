@@ -169,6 +169,18 @@ ruleTester.run("import", rule, {
       filename: file("subA/pages/a1/a1.js"),
       options: opts(),
     },
+    // 21. .wxs 文件里的 require 解析到同目录其他 .wxs
+    {
+      code: "var shared = require('./shared.wxs');",
+      filename: file("utils/main.wxs"),
+      options: opts(),
+    },
+    // 22. .wxs 文件 require 无扩展名也能命中（resolver 兜 .wxs）
+    {
+      code: "var shared = require('./shared');",
+      filename: file("utils/main.wxs"),
+      options: opts(),
+    },
   ],
 
   invalid: [
@@ -287,6 +299,25 @@ ruleTester.run("import", rule, {
       filename: file("pages/index/index.js"),
       options: opts(),
       errors: [{ messageId: "dynamicMainImportSubpackage" }],
+    },
+    // 17. .wxs 文件里 require 使用 alias → 原生 WXS 不支持，直接报 aliasNotSupportedInWxs
+    {
+      code: "var shared = require('@/utils/shared.wxs');",
+      filename: file("utils/main.wxs"),
+      options: opts(),
+      errors: [
+        {
+          messageId: "aliasNotSupportedInWxs",
+          data: { request: "@/utils/shared.wxs", alias: "@/" },
+        },
+      ],
+    },
+    // 18. .wxs 文件里 require 精确 alias（~utils）同样不合法
+    {
+      code: "var u = require('~utils');",
+      filename: file("utils/main.wxs"),
+      options: opts(),
+      errors: [{ messageId: "aliasNotSupportedInWxs" }],
     },
   ],
 });
