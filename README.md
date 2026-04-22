@@ -81,8 +81,9 @@ If you prefer a JSON config, add this plugin manually under `jsPlugins`:
 ✅ Set in the `recommended` configuration.\
 🔧 Automatically fixable by the [`--fix` CLI option](https://eslint.org/docs/user-guide/command-line-interface#--fix).
 
-| Name                                 | Description             | 💼   | 🔧 |
-| :----------------------------------- | :---------------------- | :--- | :- |
-| [component](docs/rules/component.md) | 检查组件的 properties 属性是否规范 | 🧊 ✅ | 🔧 |
+| Name                                 | Description                                | 💼   | 🔧 |
+| :----------------------------------- | :----------------------------------------- | :--- | :- |
+| [component](docs/rules/component.md) | 检查组件的 properties 属性是否规范         | 🧊 ✅ | 🔧 |
+| [import](docs/rules/import.md)       | 基于 app.json 校验引用路径 / 分包边界 / 动态跳转 | 🧊 ✅ |    |
 
 <!-- end auto-generated rules list -->

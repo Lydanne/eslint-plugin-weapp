@@ -1,0 +1,31 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/detail/detail"
+  ],
+  "subpackages": [
+    {
+      "root": "subA",
+      "pages": [
+        "pages/a1/a1"
+      ]
+    },
+    {
+      "root": "subB",
+      "pages": [
+        "pages/b1/b1"
+      ]
+    },
+    {
+      "root": "subInd",
+      "pages": [
+        "pages/i1/i1"
+      ],
+      "independent": true
+    }
+  ],
+  "resolveAlias": {
+    "@/*": "/*",
+    "~utils": "/utils/util"
+  }
+}
