@@ -7,7 +7,7 @@ description: 基于 app.json 校验 wx.navigateTo / redirectTo / switchTab / reL
 
 # weapp2/wx-navigate
 
-📝 在 lint 阶段校验 `wx.navigateTo` / `wx.redirectTo` / `wx.switchTab` / `wx.reLaunch` 的 `url` 是否指向存在的小程序页面、是否违反跨分包边界。
+📝 在 lint 阶段校验 `wx.navigateTo` / `wx.redirectTo` / `wx.switchTab` / `wx.reLaunch` 的 `url` 是否指向 `app.json` 已注册的小程序页面、是否违反跨分包边界。
 
 💼 This rule is enabled in the following configs: 🧊 `flat/recommended`, ✅ `recommended`.
 
@@ -17,7 +17,7 @@ description: 基于 app.json 校验 wx.navigateTo / redirectTo / switchTab / reL
 
 小程序运行时通过 `wx.navigateTo` 等 API 做页面跳转时，只有**运行到那一行**才会暴露 url 写错或跨分包的问题，反馈链路慢、踩坑代价高。对大多数跳转 url 都是**字面量**（或常量拼接）这一类，用静态分析完全可以前置捕获：
 
-- url 指向的页面是否真实存在？
+- url 指向的页面是否已在 `app.json` 的 `pages` / `subpackages` 中注册？
 - 主包页面试图 `wx.navigateTo` 到分包页面？分包 A 是否在 `switchTab` 到分包 B？
 - 独立分包里 `reLaunch` 回了主包页面？
 
@@ -25,7 +25,7 @@ description: 基于 app.json 校验 wx.navigateTo / redirectTo / switchTab / reL
 
 ## 检查项
 
-1. **路径存在性** — 字面 `url` 能否解析到一个真实存在的小程序页面（会剥离 `?query` / `#hash`、尝试扩展名补全与 `index.*` 兜底）。
+1. **页面注册检查** — 字面 `url` 能否匹配到 `app.json` 的 `pages` / `subpackages[*].pages` 注册页面（会剥离 `?query` / `#hash`，支持绝对路径、相对路径和可选页面文件扩展名）。
 2. **跨分包边界**
    - 主包页面不能跳转到分包页面 → `mainImportSubpackage`。
    - 分包 A 不能跳转到分包 B → `crossSubpackage`。
@@ -83,7 +83,6 @@ module.exports = {
 | :----------------------- | :--------- | :---------------------------------------------------------- | :------------------------------------------------------------- |
 | `projectConfigPath`            | `string`   | 自动查找 `project.config.json`                              | `project.config.json` 绝对或相对路径                                      |
 | `miniprogramRoot`        | `string`   | 解析后的 `app.json` 所在目录                                 | monorepo / 自定义根目录时覆盖                                  |
-| `extensions`             | `string[]` | `['.js','.ts','.mjs','.cjs','.json','.wxs']`                | url 解析时的扩展名补全顺序                                     |
 | `apis`                   | `string[]` | `['navigateTo','redirectTo','switchTab','reLaunch']`        | 需要校验的 `wx.*` 方法名；可扩展自定义跳转封装（见下）         |
 | `checks.pathExists`      | `boolean`  | `true`                                                      | 关闭后不再报 `notResolved`                                     |
 | `checks.packageBoundary` | `boolean`  | `true`                                                      | 父开关，关闭后下列三个子开关全部失效                           |

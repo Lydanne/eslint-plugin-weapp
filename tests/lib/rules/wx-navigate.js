@@ -53,6 +53,18 @@ ruleTester.run("wx-navigate", rule, {
       filename: file("pages/index/index.js"),
       options: opts(),
     },
+    // 4b. 以 app.json 注册页面为准：页面文件不存在但已注册也合法
+    {
+      code: "wx.navigateTo({ url: '/pages/registered-only/registered-only' });",
+      filename: file("pages/index/index.js"),
+      options: opts(),
+    },
+    // 4c. 相对路径最终也归一化为 app.json 里的 page stem
+    {
+      code: "wx.navigateTo({ url: '../detail/detail' });",
+      filename: file("pages/index/index.js"),
+      options: opts(),
+    },
     // 5. 动态 url（非字面量）→ 跳过
     {
       code: "wx.navigateTo({ url });",
@@ -148,6 +160,13 @@ ruleTester.run("wx-navigate", rule, {
     // 1. 跳转到不存在页面
     {
       code: "wx.navigateTo({ url: '/pages/not/found' });",
+      filename: file("pages/index/index.js"),
+      options: opts(),
+      errors: [{ messageId: "notResolved" }],
+    },
+    // 1b. 文件存在但未在 app.json 注册，仍然视为非法页面
+    {
+      code: "wx.navigateTo({ url: '/components/hello/hello' });",
       filename: file("pages/index/index.js"),
       options: opts(),
       errors: [{ messageId: "notResolved" }],
