@@ -76,6 +76,7 @@ module.exports = [
 | `checks.mainImportSubpackage` | `boolean`  | `true`                                     | 关闭后不再报"主包 → 分包"                                                   |
 | `checks.crossSubpackage`      | `boolean`  | `true`                                     | 关闭后不再报"分包 A → 分包 B"                                               |
 | `checks.independentCross`     | `boolean`  | `true`                                     | 关闭后不再报"独立分包 → 外部"                                               |
+| `ignorePatterns`              | `string[]` | `[]`                                       | 正则源码数组，命中任一者对该引用完全静默（详见下文）                        |
 
 ## 路径别名（resolveAlias）
 
@@ -189,6 +190,30 @@ require.async('/commonPackage/index').then((mod) => {
 ### 为什么不为 async 加开关
 
 async 是官方合法机制，默认跳过边界校验就是正确行为。想彻底禁止（包括 async）请改用 `checks.packageBoundary: false` 关整套跨分包校验，或者根据需要关对应子开关。
+
+## ignorePatterns
+
+正则字符串数组，匹配对象是 **request / url 原始字符串**（跟你代码里写的一样，不做任何 alias 展开或路径标准化）。命中任一正则即**整条**引用被静默，不会再走存在性、跨分包、alias 等任何检查。
+
+```js
+'weapp2/import': ['error', {
+  appJsonPath: path.resolve(__dirname, 'miniprogram/app.json'),
+  ignorePatterns: [
+    '^lodash$',             // 裸模块名精确匹配
+    '^@foo/',               // scoped 包整组忽略
+    '/__fixtures__/',       // 测试固件目录下的引用全不查
+    '^wxfile://',           // 协议路径（插件默认已跳过，这里是演示语法）
+  ],
+}]
+```
+
+### 语义与注意事项
+
+- 元素是**正则源码字符串**（不是 glob）。内部用 `new RegExp(source)` 编译。
+- 命中即**一刀切静默**：不区分 `pathExists` / `packageBoundary` / `aliasNotSupportedInWxs`，全部跳过。
+- 非法正则源码（如 `"[bad"`）会被**静默忽略**，不会让整个规则崩溃。
+- **只对这个规则生效**。其它规则（`weapp2/wx-navigate` / `weapp2/json-import` / `weapp2/wxml-import` / `weapp2/wxss-import`）都各自独立配置 `ignorePatterns`。
+- 想按**当前文件**忽略请用 ESLint 原生的 `overrides` / `ignorePatterns` 配置，本选项只作用于被引用的路径。
 
 ## 局限
 

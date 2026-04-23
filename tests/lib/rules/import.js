@@ -194,6 +194,26 @@ ruleTester.run("import", rule, {
       filename: file("pages/index/index.js"),
       options: opts(),
     },
+    // 24. ignorePatterns：匹配到的 request 整条跳过所有检查
+    {
+      code: "require('/subA/components/foo/foo');",
+      filename: file("pages/index/index.js"),
+      options: opts({ ignorePatterns: ["^/subA/"] }),
+    },
+    // 24b. ignorePatterns：多个正则，命中任一即跳过
+    {
+      code: "import x from './totally-missing';",
+      filename: file("pages/index/index.js"),
+      options: opts({
+        ignorePatterns: ["no-match-here", "totally-missing$"],
+      }),
+    },
+    // 24c. ignorePatterns：非法正则源码被静默忽略，不会让整个规则崩
+    {
+      code: "require('/utils/util');",
+      filename: file("pages/index/index.js"),
+      options: opts({ ignorePatterns: ["[bad-regex"] }),
+    },
   ],
 
   invalid: [

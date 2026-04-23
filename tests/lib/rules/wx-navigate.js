@@ -131,6 +131,12 @@ ruleTester.run("wx-navigate", rule, {
       filename: file("subInd/pages/i1/i1.js"),
       options: opts({ checks: { independentCross: false } }),
     },
+    // 14. ignorePatterns：匹配到的 url 整条跳过
+    {
+      code: "wx.redirectTo({ url: '/subA/pages/a1/a1' });",
+      filename: file("pages/index/index.js"),
+      options: opts({ ignorePatterns: ["^/subA/"] }),
+    },
   ],
 
   invalid: [

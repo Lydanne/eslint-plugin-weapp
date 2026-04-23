@@ -104,6 +104,12 @@ ruleTester.run("wxml-import", rule, {
       filename: file("pages/index/index.wxml"),
       options: opts(),
     },
+    // 14. ignorePatterns：匹配到的 src 整条跳过
+    {
+      code: `<import src="/no/where.wxml"/>`,
+      filename: file("pages/index/index.wxml"),
+      options: opts({ ignorePatterns: ["^/no/"] }),
+    },
   ],
 
   invalid: [

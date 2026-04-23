@@ -96,6 +96,12 @@ ruleTester.run("json-import", rule, {
       filename: path.resolve(__dirname, "../../fixtures/outside.json"),
       options: opts(),
     },
+    // 13. ignorePatterns：匹配到的路径整条跳过
+    {
+      code: `{ "usingComponents": { "x": "/no/where" } }`,
+      filename: file("pages/index/index.json"),
+      options: opts({ ignorePatterns: ["^/no/"] }),
+    },
   ],
 
   invalid: [

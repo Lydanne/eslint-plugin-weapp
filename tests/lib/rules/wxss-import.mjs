@@ -90,6 +90,12 @@ ruleTester.run("wxss-import", rule, {
       filename: path.resolve(__dirname, "../../fixtures/outside.wxss"),
       options: opts(),
     },
+    // 12. ignorePatterns：匹配到的 @import 整条跳过
+    {
+      code: `@import "/ghost.wxss";`,
+      filename: file("pages/index/index.wxss"),
+      options: opts({ ignorePatterns: ["^/ghost"] }),
+    },
   ],
 
   invalid: [

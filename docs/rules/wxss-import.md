@@ -62,6 +62,7 @@ module.exports = [
 | `extensions`             | `string[]` | `['.wxss']`                  | `@import` 省略扩展名时的补全顺序（如需支持 `.css` 自行追加） |
 | `checks.pathExists`      | `boolean`  | `true`                       | 关闭后不再报未解析错误                      |
 | `checks.packageBoundary` | `boolean`  | `true`                       | 关闭后不再校验跨分包                        |
+| `ignorePatterns`         | `string[]` | `[]`                         | 正则源码数组，匹配 `@import` 路径原始字符串；命中任一即整条跳过。语义同 [`weapp2/import#ignorepatterns`](./import.md#ignorepatterns) |
 
 ## 检查项
 

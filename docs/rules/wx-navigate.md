@@ -93,6 +93,7 @@ module.exports = {
 | `checks.mainImportSubpackage` | `boolean` | `true`                                                  | 关闭后不再报"主包 → 分包"                                      |
 | `checks.crossSubpackage` | `boolean`  | `true`                                                      | 关闭后不再报"分包 A → 分包 B"                                  |
 | `checks.independentCross` | `boolean` | `true`                                                      | 关闭后不再报"独立分包 → 外部"                                  |
+| `ignorePatterns`         | `string[]` | `[]`                                                        | 正则源码数组，匹配 `url` 原始字符串；命中任一即整条跳过。语义同 [`weapp2/import#ignorepatterns`](./import.md#ignorepatterns) |
 
 ### 扩展 `apis`：覆盖自定义跳转封装
 
