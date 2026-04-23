@@ -7,9 +7,9 @@ description: 基于 app.json 校验 WXSS 的 @import 路径
 
 # weapp2/wxss-import
 
-📝 基于 `app.json` 校验 **WXSS** 文件中 `@import` 的目标文件是否存在，以及是否跨越了小程序的分包边界。
+📝 基于 app.json 校验 WXSS 的 @import 引用路径与分包边界.
 
-> 微信小程序原生只识别 `.wxss`，不支持直接引入 `.css`。若你的构建链在中间产出 `.css`（如 taro 编译输出）可在 `extensions` 选项里自行加上。
+💼 This rule is enabled in the 🌐 `flat/weapp` config.
 
 <!-- end auto-generated rule header -->
 
@@ -28,7 +28,10 @@ description: 基于 app.json 校验 WXSS 的 @import 路径
 
 > WXSS 相对标准 CSS 主要多了 `rpx` 单位。CSSTree 能原样解析，但如果你文件里混用了非标准语法（例如某些 PostCSS 扩展），建议把 `languageOptions.tolerant` 设为 `true`。
 
-## 配置
+## Config
+
+如果你使用 `weapp2.configs["flat/weapp"]`，此规则已经随 `@eslint/css`
+配置自动启用；下面是单独启用规则时的配置方式。
 
 ```js
 // eslint.config.js
@@ -53,7 +56,7 @@ module.exports = [
 ];
 ```
 
-### 选项
+### Options
 
 | 选项                     | 类型       | 默认值                       | 说明                                        |
 | :----------------------- | :--------- | :--------------------------- | :------------------------------------------ |

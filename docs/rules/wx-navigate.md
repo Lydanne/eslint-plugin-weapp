@@ -7,9 +7,9 @@ description: 基于 app.json 校验 wx.navigateTo / redirectTo / switchTab / reL
 
 # weapp2/wx-navigate
 
-📝 在 lint 阶段校验 `wx.navigateTo` / `wx.redirectTo` / `wx.switchTab` / `wx.reLaunch` 的 `url` 是否指向 `app.json` 已注册的小程序页面、是否违反跨分包边界。
+📝 基于 app.json 校验 wx.navigateTo / redirectTo / switchTab / reLaunch 等跳转 API 的 url 是否合法.
 
-💼 This rule is enabled in the following configs: 🧊 `flat/recommended`, ✅ `recommended`.
+💼 This rule is enabled in the following configs: 🧊 `flat/recommended`, 🌐 `flat/weapp`, ✅ `recommended`.
 
 <!-- end auto-generated rule header -->
 
@@ -59,22 +59,6 @@ module.exports = [
     },
   },
 ];
-```
-
-### oxlint.config
-
-```ts
-module.exports = {
-  jsPlugins: ["eslint-plugin-weapp2"],
-  rules: {
-    "weapp2/wx-navigate": [
-      "error",
-      {
-        projectConfigPath: require("path").resolve(__dirname, "project.config.json"),
-      },
-    ],
-  },
-};
 ```
 
 ### 选项表

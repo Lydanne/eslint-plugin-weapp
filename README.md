@@ -4,37 +4,35 @@ a weapp eslint
 
 ## Installation
 
-You'll first need to install [ESLint](https://eslint.org/):
+Install [ESLint](https://eslint.org/), this plugin, and the language plugins
+used by the mini program asset rules:
 
 ```sh
-npm i eslint --save-dev
-```
-
-Next, install `eslint-plugin-weapp2`:
-
-```sh
-npm install eslint eslint-plugin-weapp2 --save-dev
-# pnpm install eslint eslint-plugin-weapp2 --save-dev
+npm install eslint eslint-plugin-weapp2 @eslint/json @eslint/css --save-dev
+# pnpm install eslint eslint-plugin-weapp2 @eslint/json @eslint/css --save-dev
 ```
 
 ## Usage
 
-For ESLint 9 and ESLint 10, use a flat config file:
+For ESLint 10, use the bundled mini program flat config:
 
 ```js
 const { defineConfig } = require("eslint/config");
 const weapp2 = require("eslint-plugin-weapp2");
 
 module.exports = defineConfig([
-  {
-    files: ["**/*.{js,mjs,cjs}"],
-    plugins: {
-      weapp2,
-    },
-    extends: ["weapp2/recommended"],
-  },
+  ...weapp2.configs["flat/weapp"],
 ]);
 ```
+
+`flat/weapp` enables:
+
+- JS/WXS rules: `weapp2/component`, `weapp2/import`, `weapp2/wx-navigate`
+- JSON rules through `@eslint/json`: `weapp2/component-import`
+- WXSS rules through `@eslint/css`: `weapp2/wxss-import`
+- WXML rules through the built-in `weapp2/wxml` language: `weapp2/wxml-import`
+
+If you only want the JS/WXS rules, use `weapp2.configs["flat/recommended"]`.
 
 If you're still on ESLint 8, you can keep using `.eslintrc`:
 
@@ -44,49 +42,23 @@ If you're still on ESLint 8, you can keep using `.eslintrc`:
 }
 ```
 
-To use this plugin from Oxlint with the bundled preset, create `oxlint.config.ts`:
-
-```ts
-import { defineConfig } from "oxlint";
-import weapp2OxlintPreset from "eslint-plugin-weapp2/oxlint";
-
-export default defineConfig({
-  ...weapp2OxlintPreset,
-});
-```
-
-The preset includes:
-
-- `jsPlugins: ["eslint-plugin-weapp2"]`
-- weapp globals such as `Component` and `wx`
-- the plugin rule plus the matching Oxlint core rule overrides
-
-If you prefer a JSON config, add this plugin manually under `jsPlugins`:
-
-```json
-{
-  "jsPlugins": ["eslint-plugin-weapp2"],
-  "rules": {
-    "weapp2/component": "error"
-  }
-}
-```
-
 ## Rules
 
 <!-- begin auto-generated rules list -->
 
 💼 Configurations enabled in.\
 🧊 Set in the `flat/recommended` configuration.\
+🌐 Set in the `flat/weapp` configuration.\
 ✅ Set in the `recommended` configuration.\
 🔧 Automatically fixable by the [`--fix` CLI option](https://eslint.org/docs/user-guide/command-line-interface#--fix).
 
-| Name                                       | Description                                              | 💼   | 🔧 |
-| :----------------------------------------- | :------------------------------------------------------- | :--- | :- |
-| [component](docs/rules/component.md)       | 检查组件的 properties 属性是否规范                       | 🧊 ✅ | 🔧 |
-| [import](docs/rules/import.md)             | 基于 app.json 校验 JS/WXS 的引用路径 / 分包边界 / 动态跳转 | 🧊 ✅ |    |
-| [component-import](docs/rules/component-import.md) | 基于 app.json 校验组件配置路径（usingComponents / pages 等，需 `@eslint/json`） |      |    |
-| [wxss-import](docs/rules/wxss-import.md)   | 基于 app.json 校验 WXSS 的 @import 路径（需 `@eslint/css`） |      |    |
-| [wxml-import](docs/rules/wxml-import.md)   | 基于 app.json 校验 WXML 中 `<import>` / `<include>` / `<wxs>` 的 `src`（内置 `weapp2/wxml` 语言） |      |    |
+| Name                                               | Description                                                                         | 💼      | 🔧 |
+| :------------------------------------------------- | :---------------------------------------------------------------------------------- | :------ | :- |
+| [component](docs/rules/component.md)               | 检查组件的 properties 属性是否规范                                                             | 🧊 🌐 ✅ | 🔧 |
+| [component-import](docs/rules/component-import.md) | 基于 app.json 校验小程序组件配置文件中的路径（usingComponents / pages / tabBar 等）                     | 🌐      |    |
+| [import](docs/rules/import.md)                     | 基于 app.json 检查小程序的 import/require 与动态跳转是否合法                                         | 🧊 🌐 ✅ |    |
+| [wx-navigate](docs/rules/wx-navigate.md)           | 基于 app.json 校验 wx.navigateTo / redirectTo / switchTab / reLaunch 等跳转 API 的 url 是否合法 | 🧊 🌐 ✅ |    |
+| [wxml-import](docs/rules/wxml-import.md)           | 基于 app.json 校验 WXML 中 <import>/<include>/<wxs> 的 src 路径与分包边界                        | 🌐      |    |
+| [wxss-import](docs/rules/wxss-import.md)           | 基于 app.json 校验 WXSS 的 @import 引用路径与分包边界                                             | 🌐      |    |
 
 <!-- end auto-generated rules list -->

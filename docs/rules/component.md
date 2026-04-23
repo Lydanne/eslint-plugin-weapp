@@ -10,7 +10,7 @@ since: v7.1.0
 
 📝 检查组件的 properties 属性是否规范.
 
-💼 This rule is enabled in the following configs: 🧊 `flat/recommended`, ✅ `recommended`.
+💼 This rule is enabled in the following configs: 🧊 `flat/recommended`, 🌐 `flat/weapp`, ✅ `recommended`.
 
 🔧 This rule is automatically fixable by the [`--fix` CLI option](https://eslint.org/docs/latest/user-guide/command-line-interface#--fix).
 

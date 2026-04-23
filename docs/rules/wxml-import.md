@@ -7,7 +7,9 @@ description: 基于 app.json 校验 WXML 模板中 import / include / wxs 的 sr
 
 # weapp2/wxml-import
 
-📝 基于 `app.json` 校验 **WXML** 模板中 `<import src>` / `<include src>` / `<wxs src>` 指向的目标文件是否存在，以及是否越过了小程序的分包边界。
+📝 基于 app.json 校验 WXML 中 <import>/<include>/<wxs> 的 src 路径与分包边界.
+
+💼 This rule is enabled in the 🌐 `flat/weapp` config.
 
 <!-- end auto-generated rule header -->
 
@@ -21,7 +23,10 @@ description: 基于 app.json 校验 WXML 模板中 import / include / wxs 的 sr
 
 因此 WXML 不走 processor，诊断行列精确。
 
-## 配置
+## Config
+
+如果你使用 `weapp2.configs["flat/weapp"]`，此规则已经随内置
+`weapp2/wxml` language 自动启用；下面是单独启用规则时的配置方式。
 
 ```js
 // eslint.config.js
@@ -44,7 +49,7 @@ module.exports = [
 ];
 ```
 
-### 选项
+### Options
 
 | 选项                     | 类型       | 默认值                        | 说明                          |
 | :----------------------- | :--------- | :---------------------------- | :---------------------------- |

@@ -3,7 +3,6 @@
 const path = require("node:path");
 const { RuleTester } = require("eslint");
 
-// 先加载插件主入口，确保 @oxlint/plugins 把 create 挂到规则对象上，避免依赖 mocha 加载顺序
 require("../../../lib");
 const { clearCache } = require("../../../lib/import/app-json");
 const rule = require("../../../lib/rules/import");

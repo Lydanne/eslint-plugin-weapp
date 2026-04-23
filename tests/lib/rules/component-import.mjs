@@ -5,7 +5,6 @@ import { RuleTester } from "eslint";
 import json from "@eslint/json";
 
 const require = createRequire(import.meta.url);
-// 先加载 plugin 主入口确保 @oxlint/plugins compat 不会误伤我们的 create()（JSON 规则已自带 create，本行仅为形态一致）
 require("../../../lib");
 const rule = require("../../../lib/rules/component-import");
 const { clearCache } = require("../../../lib/import/app-json");

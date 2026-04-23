@@ -7,7 +7,9 @@ description: 基于 app.json 校验小程序组件配置文件中的路径字段
 
 # weapp2/component-import
 
-📝 基于 `app.json` 校验小程序 **组件配置文件** 中的路径字段：`usingComponents` / `componentGenerics` / `pages` / `subpackages[*].pages` / `tabBar.list[*].iconPath` / `themeLocation` / `sitemapLocation`。
+📝 基于 app.json 校验小程序组件配置文件中的路径（usingComponents / pages / tabBar 等）.
+
+💼 This rule is enabled in the 🌐 `flat/weapp` config.
 
 <!-- end auto-generated rule header -->
 
@@ -24,7 +26,10 @@ description: 基于 app.json 校验小程序组件配置文件中的路径字段
 
 3. 在 `eslint.config.js` 里给 `**/*.json` 启用 `json/json` 语言并挂载本规则。
 
-## 配置
+## Config
+
+如果你使用 `weapp2.configs["flat/weapp"]`，此规则已经随 `@eslint/json`
+配置自动启用；下面是单独启用规则时的配置方式。
 
 ```js
 // eslint.config.js
@@ -48,7 +53,7 @@ module.exports = [
 ];
 ```
 
-### 选项
+### Options
 
 选项形状与 [`weapp2/import`](./import.md) 一致，去掉 `checks.dynamic`：
 
