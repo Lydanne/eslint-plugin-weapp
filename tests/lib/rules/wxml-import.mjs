@@ -53,10 +53,22 @@ ruleTester.run("wxml-import", rule, {
       filename: file("pages/index/index.wxml"),
       options: opts(),
     },
+    // 4b. <wxs src> 小程序绝对路径
+    {
+      code: `<wxs src="/utils/shared.wxs" module="u"/>`,
+      filename: file("pages/index/index.wxml"),
+      options: opts(),
+    },
     // 5. <wxs src> 相对 + 省略扩展名
     {
       code: `<wxs src="./shared" module="u"/>`,
       filename: file("utils/main.wxml"),
+      options: opts(),
+    },
+    // 5b. <import> 同目录写法
+    {
+      code: `<import src="index.skeleton.wxml"/>`,
+      filename: file("pages/index/index.wxml"),
       options: opts(),
     },
     // 7. 动态绑定 {{}} → 规则跳过
@@ -205,18 +217,6 @@ ruleTester.run("wxml-import", rule, {
       filename: file("pages/index/index.wxml"),
       options: opts(),
       errors: [{ messageId: "aliasNotSupported" }],
-    },
-    // 8c. <wxs src> 按官方要求必须是相对路径
-    {
-      code: `<wxs src="/utils/shared.wxs" module="u"/>`,
-      filename: file("pages/index/index.wxml"),
-      options: opts(),
-      errors: [
-        {
-          messageId: "wxsSrcNotRelative",
-          data: { request: "/utils/shared.wxs" },
-        },
-      ],
     },
     // 9. projectConfigPath 指向不存在文件 → Program 级报错
     {
