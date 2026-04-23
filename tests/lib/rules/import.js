@@ -164,6 +164,36 @@ ruleTester.run("import", rule, {
       filename: file("utils/main.wxs"),
       options: opts(),
     },
+    // 23a. 分包异步化 - callback 风格：分包 A → 分包 B（官方合法）
+    {
+      code: "require('/subB/pages/b1/b1', (mod) => { console.log(mod); });",
+      filename: file("subA/pages/a1/a1.js"),
+      options: opts(),
+    },
+    // 23b. 分包异步化 - callback 风格：主包 → 分包（官方合法）
+    {
+      code: "require('/subA/components/foo/foo', (mod) => {}, ({errMsg}) => {});",
+      filename: file("pages/index/index.js"),
+      options: opts(),
+    },
+    // 23c. 分包异步化 - callback 风格：独立分包 → 主包（官方合法）
+    {
+      code: "require('/utils/util', (mod) => {});",
+      filename: file("subInd/pages/i1/i1.js"),
+      options: opts(),
+    },
+    // 23d. 分包异步化 - Promise 风格：require.async
+    {
+      code: "require.async('/subB/pages/b1/b1').then((mod) => {});",
+      filename: file("subA/pages/a1/a1.js"),
+      options: opts(),
+    },
+    // 23e. async require 带 resolveAlias
+    {
+      code: "require('@/subA/components/foo/foo', (mod) => {});",
+      filename: file("pages/index/index.js"),
+      options: opts(),
+    },
   ],
 
   invalid: [
@@ -247,6 +277,20 @@ ruleTester.run("import", rule, {
       filename: file("pages/index/index.js"),
       options: opts(),
       errors: [{ messageId: "mainImportSubpackage" }],
+    },
+    // 16b. 分包异步化 - 路径写错仍然报 notResolved
+    {
+      code: "require('/subA/pages/does-not-exist', (mod) => {});",
+      filename: file("pages/index/index.js"),
+      options: opts(),
+      errors: [{ messageId: "notResolved" }],
+    },
+    // 16c. require.async - 路径写错仍然报 notResolved
+    {
+      code: "require.async('/subA/pages/does-not-exist').then(mod => {});",
+      filename: file("pages/index/index.js"),
+      options: opts(),
+      errors: [{ messageId: "notResolved" }],
     },
     // 17. .wxs 文件里 require 使用 alias → 原生 WXS 不支持，直接报 aliasNotSupportedInWxs
     {
