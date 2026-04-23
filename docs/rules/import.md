@@ -2,12 +2,14 @@
 pageClass: rule-details
 sidebarDepth: 0
 title: weapp2/import
-description: 基于 app.json 检查小程序的静态/动态引用是否合法
+description: 基于 app.json 检查小程序 JS 文件的静态引用是否合法
 ---
 
 # weapp2/import
 
-📝 基于 `app.json` 检查小程序 JS 文件的引用：路径存在性、跨分包边界、`wx.navigateTo` 等动态跳转。
+📝 基于 `app.json` 检查小程序 JS / WXS 文件的 **静态** 引用：路径存在性、跨分包边界，以及 `.wxs` 里 alias 误用。
+
+🔄 `wx.navigateTo` / `redirectTo` / `switchTab` / `reLaunch` 等跳转类 API 的 `url` 校验已拆为独立规则 [`weapp2/wx-navigate`](./wx-navigate.md)。
 
 💼 This rule is enabled in the following configs: 🧊 `flat/recommended`, ✅ `recommended`.
 
@@ -31,8 +33,8 @@ description: 基于 app.json 检查小程序的静态/动态引用是否合法
    - 主包文件不能引用分包。
    - 普通分包之间不能互相引用。
    - 独立分包内的文件只能引用自身分包内的资源。
-3. **动态跳转校验** — `wx.navigateTo` / `wx.redirectTo` / `wx.switchTab` / `wx.reLaunch` 第一个参数对象的字面量 `url`，同样按上述两条检查（`url` 含 `?query` / `#hash` 会自动剥离）。
-4. **路径别名（resolveAlias）** — 识别 `app.json` 中配置的 `resolveAlias`，在上述三类检查之前先完成一次路径替换，替换结果继续走标准解析与分包边界判定。
+3. **路径别名（resolveAlias）** — 识别 `app.json` 中配置的 `resolveAlias`，在上述两类检查之前先完成一次路径替换，替换结果继续走标准解析与分包边界判定。动态跳转的 alias 校验由 `weapp2/wx-navigate` 单独负责。
+4. **`.wxs` 里的 alias 误用** — 原生 WXS 不支持 `resolveAlias`；`.wxs` 文件里 `require('@/...')` 会报 `aliasNotSupportedInWxs`。
 
 ## 配置
 
@@ -70,7 +72,6 @@ module.exports = [
 | `extensions`                  | `string[]` | `['.js','.ts','.mjs','.cjs','.json','.wxs']` | 解析文件时按顺序尝试补全的扩展名                                          |
 | `checks.pathExists`           | `boolean`  | `true`                                     | 关闭后不再报告未解析错误                                                    |
 | `checks.packageBoundary`      | `boolean`  | `true`                                     | 关闭后不再校验跨分包                                                        |
-| `checks.dynamic`              | `boolean`  | `true`                                     | 关闭后不再校验 `wx.navigateTo` 系列                                         |
 
 ## 路径别名（resolveAlias）
 
@@ -97,8 +98,8 @@ module.exports = [
 
 - 结果一般以 `/` 开头，继续按小程序根目录解析（含扩展名补全、目录 `index.*` 兜底）。
 - 继续参与 **跨分包边界** 检查：`@/subA/...` 从主包引用会被 `mainImportSubpackage` 捕获。
-- 继续参与 **动态跳转** 检查：`wx.navigateTo({ url: '@/pages/detail/detail' })` 会先展开别名再校验存在性与分包边界。
 - 未解析的 alias（如 `@/not-exist`）仍报 `notResolved`，报告里携带原始 `request`（例如 `"@/not-exist"`）。
+- 动态跳转的 alias 展开行为和报警由 [`weapp2/wx-navigate`](./wx-navigate.md) 负责。
 
 ### 什么地方 **不** 展开 alias
 
@@ -121,7 +122,6 @@ module.exports = [
 ```js
 // miniprogram/pages/index/index.js
 require("/subA/components/foo/foo"); // 主包 → 分包，禁止
-wx.navigateTo({ url: "/subA/pages/a1/a1" }); // 同上（动态）
 
 // miniprogram/subA/pages/a1/a1.js
 require("/subB/pages/b1/b1"); // 分包 → 其它分包，禁止
@@ -150,4 +150,5 @@ const _ = require("lodash");
 ## 局限
 
 - 仅支持字面量 / 无插值模板字符串作为路径；含有变量插值的引用会被跳过以避免误报。
-- 组件 `usingComponents`（JSON）检查、非 `wx.*` 跳转 API 的动态校验，以及 WXML `<import>`/`<include>` 仍需后续扩展。
+- 动态跳转（`wx.navigateTo` / `redirectTo` / `switchTab` / `reLaunch`）的 `url` 请配套 [`weapp2/wx-navigate`](./wx-navigate.md) 规则。
+- JSON `usingComponents` / WXML `<import>` / WXSS `@import` 分别由 `weapp2/json-import` / `weapp2/wxml-import` / `weapp2/wxss-import` 负责。

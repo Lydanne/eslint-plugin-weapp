@@ -5,7 +5,8 @@
   "keywords": [
     "eslint",
     "eslintplugin",
-    "eslint-plugin"
+    "eslint-plugin",
+    "oxlint"
   ],
   "author": "Lydanne",
   "main": "./lib/index.js",

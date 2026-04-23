@@ -78,21 +78,9 @@ ruleTester.run("import", rule, {
       filename: file("pages/index/index.js"),
       options: opts(),
     },
-    // 9. wx.navigateTo 合法页面
-    {
-      code: "wx.navigateTo({ url: '/pages/detail/detail' });",
-      filename: file("pages/index/index.js"),
-      options: opts(),
-    },
     // 10. 跳过协议类 import（不应误报）
     {
       code: "require('plugin://foo/bar');",
-      filename: file("pages/index/index.js"),
-      options: opts(),
-    },
-    // 11. 动态跳转带 query 参数
-    {
-      code: "wx.redirectTo({ url: '/pages/detail/detail?id=1' });",
       filename: file("pages/index/index.js"),
       options: opts(),
     },
@@ -112,7 +100,6 @@ ruleTester.run("import", rule, {
           checks: {
             pathExists: false,
             packageBoundary: false,
-            dynamic: false,
           },
         },
       ],
@@ -121,22 +108,6 @@ ruleTester.run("import", rule, {
     {
       code: "require('./i1');",
       filename: file("subInd/pages/i1/i1.js"),
-      options: opts(),
-    },
-    // 15. 动态 url（非字面量/含变量）→ 规则跳过，不产生任何报告
-    {
-      code: "wx.navigateTo({ url });",
-      filename: file("pages/index/index.js"),
-      options: opts(),
-    },
-    {
-      code: "const p = '/x'; wx.navigateTo({ url: p });",
-      filename: file("pages/index/index.js"),
-      options: opts(),
-    },
-    {
-      code: "wx.redirectTo({ url: `/pages/${name}/index` });",
-      filename: file("pages/index/index.js"),
       options: opts(),
     },
     // 16. resolveAlias 通配前缀
@@ -154,12 +125,6 @@ ruleTester.run("import", rule, {
     // 18. alias 配合 import 语法
     {
       code: "import x from '@/pages/detail/detail';",
-      filename: file("pages/index/index.js"),
-      options: opts(),
-    },
-    // 19. 动态 url 走 alias
-    {
-      code: "wx.navigateTo({ url: '@/pages/detail/detail' });",
       filename: file("pages/index/index.js"),
       options: opts(),
     },
@@ -233,34 +198,6 @@ ruleTester.run("import", rule, {
       options: opts(),
       errors: [{ messageId: "independentCross" }],
     },
-    // 8. 动态跳转到不存在页面
-    {
-      code: "wx.navigateTo({ url: '/pages/not/found' });",
-      filename: file("pages/index/index.js"),
-      options: opts(),
-      errors: [{ messageId: "dynamicNotResolved" }],
-    },
-    // 9. 主包动态跳转到分包
-    {
-      code: "wx.redirectTo({ url: '/subA/pages/a1/a1' });",
-      filename: file("pages/index/index.js"),
-      options: opts(),
-      errors: [{ messageId: "dynamicMainImportSubpackage" }],
-    },
-    // 10. 分包动态跳转到其他分包
-    {
-      code: "wx.switchTab({ url: '/subB/pages/b1/b1' });",
-      filename: file("subA/pages/a1/a1.js"),
-      options: opts(),
-      errors: [{ messageId: "dynamicCrossSubpackage" }],
-    },
-    // 11. 独立分包动态跳转到主包
-    {
-      code: "wx.reLaunch({ url: '/pages/index/index' });",
-      filename: file("subInd/pages/i1/i1.js"),
-      options: opts(),
-      errors: [{ messageId: "dynamicIndependentCross" }],
-    },
     // 12. export from 缺失
     {
       code: "export { noop } from './does-not-exist';",
@@ -292,13 +229,6 @@ ruleTester.run("import", rule, {
       filename: file("pages/index/index.js"),
       options: opts(),
       errors: [{ messageId: "mainImportSubpackage" }],
-    },
-    // 16. alias 动态跳转到分包 → dynamicMainImportSubpackage
-    {
-      code: "wx.redirectTo({ url: '@/subA/pages/a1/a1' });",
-      filename: file("pages/index/index.js"),
-      options: opts(),
-      errors: [{ messageId: "dynamicMainImportSubpackage" }],
     },
     // 17. .wxs 文件里 require 使用 alias → 原生 WXS 不支持，直接报 aliasNotSupportedInWxs
     {
