@@ -340,5 +340,29 @@ ruleTester.run("import", rule, {
       options: opts(),
       errors: [{ messageId: "aliasNotSupportedInWxs" }],
     },
+    // 19. .wxs 文件里的 require 必须使用相对路径
+    {
+      code: "var shared = require('/utils/shared.wxs');",
+      filename: file("utils/main.wxs"),
+      options: opts(),
+      errors: [
+        {
+          messageId: "wxsRequireNotRelative",
+          data: { request: "/utils/shared.wxs" },
+        },
+      ],
+    },
+    // 20. .wxs 文件里的 require 只能解析 .wxs，不应兜到同名 .js
+    {
+      code: "var util = require('./util');",
+      filename: file("utils/main.wxs"),
+      options: opts(),
+      errors: [
+        {
+          messageId: "notResolved",
+          data: { request: "./util" },
+        },
+      ],
+    },
   ],
 });

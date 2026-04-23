@@ -62,13 +62,13 @@ module.exports = [
 此规则不接受 `extensions` 选项：
 
 - `<import>` / `<include>` 固定补全 `.wxml`
-- `<wxs>` 固定补全 `.wxs`
+- `<wxs>` 固定补全 `.wxs`，且必须使用相对路径
 
 避免混淆跨扩展的同名文件。
 
 ## 检查项
 
-1. **路径存在性** — `src` 指向的 `.wxml` / `.wxs` 文件能否解析（仅支持 `/`、`./`、`../`）。
+1. **路径存在性** — `src` 指向的 `.wxml` / `.wxs` 文件能否解析（`<import>` / `<include>` 支持 `/`、`./`、`../`；`<wxs>` 按官方规则只支持 `./`、`../`）。
 2. **跨分包边界**：
    - 主包 WXML ↛ 分包资源
    - 分包 A ↛ 分包 B
@@ -85,7 +85,7 @@ module.exports = [
 <import src="../../templates/base"/>           <!-- 省略扩展名 -->
 <!-- 注意：原生 WXML 不支持 `@/...` 别名，写了会被报 aliasNotSupported -->
 <include src="/templates/slot.wxml"/>
-<wxs src="/utils/shared.wxs" module="u"/>
+<wxs src="../../utils/shared.wxs" module="u"/>
 <image src="{{url}}"/>                          <!-- 动态绑定不校验（但本规则也不管 <image>） -->
 ```
 
@@ -110,6 +110,7 @@ module.exports = [
 <!-- 任何 .wxml -->
 <import src="/no/where.wxml"/>                  <!-- notResolved -->
 <wxs src="./ghost" module="u"/>                 <!-- 省略扩展名也解析不到 -->
+<wxs src="/utils/shared.wxs" module="u"/>       <!-- <wxs> 必须使用相对路径 -->
 ```
 
 ## 局限

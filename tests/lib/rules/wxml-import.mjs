@@ -47,9 +47,9 @@ ruleTester.run("wxml-import", rule, {
       filename: file("pages/index/index.wxml"),
       options: opts(),
     },
-    // 4. <wxs src> 绝对路径
+    // 4. <wxs src> 相对路径
     {
-      code: `<wxs src="/utils/shared.wxs" module="u"/>`,
+      code: `<wxs src="../../utils/shared.wxs" module="u"/>`,
       filename: file("pages/index/index.wxml"),
       options: opts(),
     },
@@ -99,7 +99,7 @@ ruleTester.run("wxml-import", rule, {
       code: `
         <import src="/templates/base.wxml"/>
         <include src="/templates/slot.wxml"/>
-        <wxs src="/utils/shared.wxs" module="u"/>
+        <wxs src="../../utils/shared.wxs" module="u"/>
       `,
       filename: file("pages/index/index.wxml"),
       options: opts(),
@@ -139,13 +139,13 @@ ruleTester.run("wxml-import", rule, {
     },
     // 3. <wxs> 找不到
     {
-      code: `<wxs src="/utils/ghost.wxs" module="u"/>`,
+      code: `<wxs src="../../utils/ghost.wxs" module="u"/>`,
       filename: file("pages/index/index.wxml"),
       options: opts(),
       errors: [
         {
           messageId: "notResolved",
-          data: { request: "/utils/ghost.wxs", tag: "<wxs>" },
+          data: { request: "../../utils/ghost.wxs", tag: "<wxs>" },
         },
       ],
     },
@@ -205,6 +205,18 @@ ruleTester.run("wxml-import", rule, {
       filename: file("pages/index/index.wxml"),
       options: opts(),
       errors: [{ messageId: "aliasNotSupported" }],
+    },
+    // 8c. <wxs src> 按官方要求必须是相对路径
+    {
+      code: `<wxs src="/utils/shared.wxs" module="u"/>`,
+      filename: file("pages/index/index.wxml"),
+      options: opts(),
+      errors: [
+        {
+          messageId: "wxsSrcNotRelative",
+          data: { request: "/utils/shared.wxs" },
+        },
+      ],
     },
     // 9. projectConfigPath 指向不存在文件 → Program 级报错
     {
