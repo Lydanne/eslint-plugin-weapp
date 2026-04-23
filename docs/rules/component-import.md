@@ -79,6 +79,8 @@ module.exports = [
 
 **跨分包边界只作用于 `usingComponents` / `componentGenerics.default`**；其它结构性字段（`pages` / `subpackages.pages` / `tabBar` / `themeLocation` / `sitemapLocation`）仅校验路径存在，因为它们本身就是对小程序结构的声明，讨论“跨分包”没有意义。
 
+**分包异步化例外**：当 `app.json` 配置了 `"lazyCodeLoading": "requiredComponents"`，并且当前 JSON 的 `componentPlaceholder` 覆盖了对应组件名时，`usingComponents` 可以跨包引用该异步组件；规则会继续校验目标路径存在，但不会报跨分包边界错误。
+
 **路径别名（resolveAlias）误用**：原生微信小程序的 `.json` 配置不支持 `app.json.resolveAlias`（开发者工具只在 JS 里做编译期替换）。若 `usingComponents` / `componentGenerics.default` 的值命中别名前缀（例如 `@/...`） → `aliasNotSupported`，不再展开。
 
 ## 示例

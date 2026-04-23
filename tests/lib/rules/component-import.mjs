@@ -55,6 +55,18 @@ ruleTester.run("component-import", rule, {
       filename: file("subA/pages/a1/a1.json"),
       options: opts(),
     },
+    // 5b. 分包异步化：componentPlaceholder 覆盖对应组件名时允许跨分包组件引用
+    {
+      code: `{ "usingComponents": { "foo": "/subA/components/foo/foo" }, "componentPlaceholder": { "foo": "view" } }`,
+      filename: file("pages/index/index.json"),
+      options: opts(),
+    },
+    // 5c. 分包异步化：占位符可以是自定义组件名，不限于 view
+    {
+      code: `{ "usingComponents": { "b1": "/subB/pages/b1/b1" }, "componentPlaceholder": { "b1": "local-placeholder" } }`,
+      filename: file("subA/pages/a1/a1.json"),
+      options: opts(),
+    },
     // 6. componentGenerics.default
     {
       code: `{ "componentGenerics": { "slot": { "default": "/components/hello/hello" } } }`,
