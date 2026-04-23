@@ -153,6 +153,18 @@ ruleTester.run("wx-navigate", rule, {
       code: "wx.navigateTo({ url: '/pages/detail/detail' });",
       filename: file("pages/index/index.js"),
     },
+    // 16. 公共模块不是 app.json 注册页面：只校验目标注册，不做源页面分包边界推断
+    {
+      code: "wx.navigateTo({ url: '/subA/pages/a1/a1' });",
+      filename: file("utils/util.js"),
+      options: opts(),
+    },
+    // 17. 公共模块里的相对跳转无法静态确定运行时页面，安全跳过
+    {
+      code: "wx.navigateTo({ url: '../subA/pages/a1/a1' });",
+      filename: file("utils/util.js"),
+      options: opts(),
+    },
   ],
 
   invalid: [

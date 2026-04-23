@@ -30,6 +30,7 @@ description: 基于 app.json 校验 wx.navigateTo / redirectTo / switchTab / reL
    - 主包页面不能跳转到分包页面 → `mainImportSubpackage`。
    - 分包 A 不能跳转到分包 B → `crossSubpackage`。
    - 独立分包不能跳转到任何外部页面 → `independentCross`。
+   - 只有当前被 lint 的文件本身是 `app.json` 注册页面时才做边界校验；公共工具模块或组件模块中的跳转无法静态确定运行时来源页面，因此只校验绝对路径目标是否注册。
 3. **路径别名（resolveAlias）** — 如果你的构建工具链在 `wx.*` 第一参数里也做了 alias 编译替换，规则会**先展开再校验**，和 `weapp2/import` 的 alias 语义一致。原生微信运行时不认 alias，这种用法请在构建层确认真的会被替换。
 
 动态表达式（`wx.navigateTo({ url })` / `wx.redirectTo({ url: someVar })` / 含插值的模板字符串）会被安全跳过，不产生任何报告，避免误报。

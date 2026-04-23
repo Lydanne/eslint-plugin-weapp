@@ -11,6 +11,7 @@ describe("recommended config", function () {
     assert.ok(plugin.configs.recommended);
     assert.ok(Array.isArray(plugin.configs["flat/recommended"]));
     assert.ok(Array.isArray(plugin.configs["flat/weapp"]));
+    assert.equal(typeof plugin.createFlatWeappConfig, "function");
   });
 
   it("works with ESLint 10 flat config extends", async function () {

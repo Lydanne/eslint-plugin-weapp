@@ -25,6 +25,23 @@ module.exports = defineConfig([
 ]);
 ```
 
+If your config loader cannot synchronously `require()` `@eslint/json` or
+`@eslint/css`, pass the language plugins explicitly:
+
+```js
+const { defineConfig } = require("eslint/config");
+const weapp2 = require("eslint-plugin-weapp2");
+
+module.exports = (async () => {
+  const json = (await import("@eslint/json")).default;
+  const css = (await import("@eslint/css")).default;
+
+  return defineConfig([
+    ...weapp2.createFlatWeappConfig({ json, css }),
+  ]);
+})();
+```
+
 `flat/weapp` enables:
 
 - JS/WXS rules: `weapp2/component`, `weapp2/import`, `weapp2/wx-navigate`
