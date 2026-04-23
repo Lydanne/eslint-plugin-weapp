@@ -1,13 +1,13 @@
 ---
 pageClass: rule-details
 sidebarDepth: 0
-title: weapp2/json-import
-description: 基于 app.json 校验小程序 JSON 配置文件中的路径字段
+title: weapp2/component-import
+description: 基于 app.json 校验小程序组件配置文件中的路径字段
 ---
 
-# weapp2/json-import
+# weapp2/component-import
 
-📝 基于 `app.json` 校验小程序 **JSON 配置文件** 中的路径字段：`usingComponents` / `componentGenerics` / `pages` / `subpackages[*].pages` / `tabBar.list[*].iconPath` / `themeLocation` / `sitemapLocation`。
+📝 基于 `app.json` 校验小程序 **组件配置文件** 中的路径字段：`usingComponents` / `componentGenerics` / `pages` / `subpackages[*].pages` / `tabBar.list[*].iconPath` / `themeLocation` / `sitemapLocation`。
 
 <!-- end auto-generated rule header -->
 
@@ -39,7 +39,7 @@ module.exports = [
     language: "json/json",
     plugins: { json, weapp2 },
     rules: {
-      "weapp2/json-import": [
+      "weapp2/component-import": [
         "error",
         { projectConfigPath: path.resolve(__dirname, "project.config.json") },
       ],
@@ -56,10 +56,10 @@ module.exports = [
 | :----------------------- | :--------- | :------------------------------------------- | :------------------------------------- |
 | `projectConfigPath`            | `string`   | 自动查找 `project.config.json`               | `project.config.json` 路径                        |
 | `miniprogramRoot`        | `string`   | 解析后的 `app.json` 所在目录                  | 自定义小程序根                         |
-| `extensions`             | `string[]` | `['.js','.ts','.mjs','.cjs','.json','.wxs']` | 解析组件路径时的扩展名补全顺序         |
+| `extensions`             | `string[]` | `['.js','.ts','.mjs','.cjs','.json','.wxs']` | 解析组件配置路径时的扩展名补全顺序         |
 | `checks.pathExists`      | `boolean`  | `true`                                       | 关闭后不再报未解析错误                 |
 | `checks.packageBoundary` | `boolean`  | `true`                                       | 关闭后不再校验 `usingComponents` 跨分包 |
-| `ignorePatterns`         | `string[]` | `[]`                                         | 正则源码数组，匹配 JSON 路径原始字符串；命中任一即整条跳过。语义同 [`weapp2/import#ignorepatterns`](./import.md#ignorepatterns) |
+| `ignorePatterns`         | `string[]` | `[]`                                         | 正则源码数组，匹配组件配置路径原始字符串；命中任一即整条跳过。语义同 [`weapp2/import#ignorepatterns`](./import.md#ignorepatterns) |
 
 ## 检查项与语义
 

@@ -85,7 +85,7 @@ If you prefer a JSON config, add this plugin manually under `jsPlugins`:
 | :----------------------------------------- | :------------------------------------------------------- | :--- | :- |
 | [component](docs/rules/component.md)       | 检查组件的 properties 属性是否规范                       | 🧊 ✅ | 🔧 |
 | [import](docs/rules/import.md)             | 基于 app.json 校验 JS/WXS 的引用路径 / 分包边界 / 动态跳转 | 🧊 ✅ |    |
-| [json-import](docs/rules/json-import.md)   | 基于 app.json 校验 JSON（usingComponents / pages 等）的路径（需 `@eslint/json`） |      |    |
+| [component-import](docs/rules/component-import.md) | 基于 app.json 校验组件配置路径（usingComponents / pages 等，需 `@eslint/json`） |      |    |
 | [wxss-import](docs/rules/wxss-import.md)   | 基于 app.json 校验 WXSS 的 @import 路径（需 `@eslint/css`） |      |    |
 | [wxml-import](docs/rules/wxml-import.md)   | 基于 app.json 校验 WXML 中 `<import>` / `<include>` / `<wxs>` 的 `src`（内置 `weapp2/wxml` 语言） |      |    |
 

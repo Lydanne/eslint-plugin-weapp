@@ -7,7 +7,7 @@ import json from "@eslint/json";
 const require = createRequire(import.meta.url);
 // 先加载 plugin 主入口确保 @oxlint/plugins compat 不会误伤我们的 create()（JSON 规则已自带 create，本行仅为形态一致）
 require("../../../lib");
-const rule = require("../../../lib/rules/json-import");
+const rule = require("../../../lib/rules/component-import");
 const { clearCache } = require("../../../lib/import/app-json");
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -30,7 +30,7 @@ const ruleTester = new RuleTester({
 
 clearCache();
 
-ruleTester.run("json-import", rule, {
+ruleTester.run("component-import", rule, {
   valid: [
     // 1. 主包页面 usingComponents 引用主包组件
     {
@@ -111,7 +111,7 @@ ruleTester.run("json-import", rule, {
   ],
 
   invalid: [
-    // 1. 主包 json 引用分包组件 → mainImportSubpackage
+    // 1. 主包组件配置引用分包组件 → mainImportSubpackage
     {
       code: `{ "usingComponents": { "foo": "/subA/components/foo/foo" } }`,
       filename: file("pages/index/index.json"),
