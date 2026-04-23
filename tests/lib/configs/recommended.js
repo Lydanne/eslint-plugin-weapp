@@ -54,6 +54,8 @@ describe("recommended config", function () {
       [jsResult],
       [wxsWeappResult],
       [wxsRegExpResult],
+      [wxsFunctionResult],
+      [wxsEscapeResult],
       [wxsExportsResult],
     ] = await Promise.all([
       eslint.lintText(
@@ -78,6 +80,12 @@ describe("recommended config", function () {
       eslint.lintText("RegExp('x');", {
         filePath: path.join(fixtureRoot, "utils/no-regexp.wxs"),
       }),
+      eslint.lintText("Function('return 1')();", {
+        filePath: path.join(fixtureRoot, "utils/no-function.wxs"),
+      }),
+      eslint.lintText("escape('x'); unescape('x');", {
+        filePath: path.join(fixtureRoot, "utils/no-escape.wxs"),
+      }),
       eslint.lintText("exports.value = 1;", {
         filePath: path.join(fixtureRoot, "utils/global.wxs"),
       }),
@@ -93,6 +101,20 @@ describe("recommended config", function () {
     assert.equal(wxsRegExpResult.messages.length, 1);
     assert.equal(wxsRegExpResult.messages[0].ruleId, "no-undef");
     assert.match(wxsRegExpResult.messages[0].message, /'RegExp' is not defined/);
+    assert.equal(wxsFunctionResult.messages.length, 1);
+    assert.equal(wxsFunctionResult.messages[0].ruleId, "no-undef");
+    assert.match(
+      wxsFunctionResult.messages[0].message,
+      /'Function' is not defined/
+    );
+    assert.equal(wxsEscapeResult.messages.length, 2);
+    assert.equal(wxsEscapeResult.messages[0].ruleId, "no-undef");
+    assert.match(wxsEscapeResult.messages[0].message, /'escape' is not defined/);
+    assert.equal(wxsEscapeResult.messages[1].ruleId, "no-undef");
+    assert.match(
+      wxsEscapeResult.messages[1].message,
+      /'unescape' is not defined/
+    );
     assert.equal(wxsExportsResult.messages.length, 1);
     assert.equal(wxsExportsResult.messages[0].ruleId, "no-undef");
     assert.match(wxsExportsResult.messages[0].message, /'exports' is not defined/);
