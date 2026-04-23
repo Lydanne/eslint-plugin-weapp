@@ -89,7 +89,10 @@ module.exports = {
 | `extensions`             | `string[]` | `['.js','.ts','.mjs','.cjs','.json','.wxs']`                | url 解析时的扩展名补全顺序                                     |
 | `apis`                   | `string[]` | `['navigateTo','redirectTo','switchTab','reLaunch']`        | 需要校验的 `wx.*` 方法名；可扩展自定义跳转封装（见下）         |
 | `checks.pathExists`      | `boolean`  | `true`                                                      | 关闭后不再报 `notResolved`                                     |
-| `checks.packageBoundary` | `boolean`  | `true`                                                      | 关闭后不再校验跨分包                                           |
+| `checks.packageBoundary` | `boolean`  | `true`                                                      | 父开关，关闭后下列三个子开关全部失效                           |
+| `checks.mainImportSubpackage` | `boolean` | `true`                                                  | 关闭后不再报"主包 → 分包"                                      |
+| `checks.crossSubpackage` | `boolean`  | `true`                                                      | 关闭后不再报"分包 A → 分包 B"                                  |
+| `checks.independentCross` | `boolean` | `true`                                                      | 关闭后不再报"独立分包 → 外部"                                  |
 
 ### 扩展 `apis`：覆盖自定义跳转封装
 

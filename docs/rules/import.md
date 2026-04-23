@@ -71,7 +71,10 @@ module.exports = [
 | `miniprogramRoot`             | `string`   | `path.dirname(appJsonPath)`                | 仅在 monorepo / 自定义目录结构下需要覆盖                                    |
 | `extensions`                  | `string[]` | `['.js','.ts','.mjs','.cjs','.json','.wxs']` | 解析文件时按顺序尝试补全的扩展名                                          |
 | `checks.pathExists`           | `boolean`  | `true`                                     | 关闭后不再报告未解析错误                                                    |
-| `checks.packageBoundary`      | `boolean`  | `true`                                     | 关闭后不再校验跨分包                                                        |
+| `checks.packageBoundary`      | `boolean`  | `true`                                     | 父开关，关闭后下列三个子开关全部失效                                        |
+| `checks.mainImportSubpackage` | `boolean`  | `true`                                     | 关闭后不再报"主包 → 分包"                                                   |
+| `checks.crossSubpackage`      | `boolean`  | `true`                                     | 关闭后不再报"分包 A → 分包 B"                                               |
+| `checks.independentCross`     | `boolean`  | `true`                                     | 关闭后不再报"独立分包 → 外部"                                               |
 
 ## 路径别名（resolveAlias）
 

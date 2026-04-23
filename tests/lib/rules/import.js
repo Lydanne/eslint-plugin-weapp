@@ -134,6 +134,24 @@ ruleTester.run("import", rule, {
       filename: file("subA/pages/a1/a1.js"),
       options: opts(),
     },
+    // 21a. 关闭 crossSubpackage 子开关后：分包 → 分包 静默
+    {
+      code: "require('/subB/pages/b1/b1');",
+      filename: file("subA/pages/a1/a1.js"),
+      options: opts({ checks: { crossSubpackage: false } }),
+    },
+    // 21b. 关闭 mainImportSubpackage 子开关后：主包 → 分包 静默
+    {
+      code: "require('/subA/components/foo/foo');",
+      filename: file("pages/index/index.js"),
+      options: opts({ checks: { mainImportSubpackage: false } }),
+    },
+    // 21c. 关闭 independentCross 子开关后：独立分包 → 外部 静默
+    {
+      code: "require('/utils/util');",
+      filename: file("subInd/pages/i1/i1.js"),
+      options: opts({ checks: { independentCross: false } }),
+    },
     // 21. .wxs 文件里的 require 解析到同目录其他 .wxs
     {
       code: "var shared = require('./shared.wxs');",
