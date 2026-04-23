@@ -48,8 +48,8 @@ module.exports = [
 
 | 选项                     | 类型       | 默认值                        | 说明                          |
 | :----------------------- | :--------- | :---------------------------- | :---------------------------- |
-| `appJsonPath`            | `string`   | —（必填）                     | `app.json` 路径               |
-| `miniprogramRoot`        | `string`   | `path.dirname(appJsonPath)`   | 自定义小程序根                |
+| `appJsonPath`            | `string`   | —（必填）                     | `app.json` 或 `project.config.json` 路径；传 `project.config.json` 时按 `miniprogramRoot` 定位 `app.json` |
+| `miniprogramRoot`        | `string`   | 解析后的 `app.json` 所在目录   | 自定义小程序根                |
 | `checks.pathExists`      | `boolean`  | `true`                        | 关闭后不再报未解析错误        |
 | `checks.packageBoundary` | `boolean`  | `true`                        | 关闭后不再校验跨分包          |
 | `ignorePatterns`         | `string[]` | `[]`                          | 正则源码数组，匹配 `src` 原始字符串；命中任一即整条跳过。语义同 [`weapp2/import#ignorepatterns`](./import.md#ignorepatterns) |

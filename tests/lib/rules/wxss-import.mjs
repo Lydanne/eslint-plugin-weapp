@@ -12,6 +12,7 @@ const { clearCache } = require("../../../lib/import/app-json");
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "../../fixtures/miniprogram");
 const APP_JSON = path.join(ROOT, "app.json");
+const PROJECT_CONFIG = path.resolve(__dirname, "../../fixtures/project.config.json");
 
 function file(...segments) {
   return path.join(ROOT, ...segments);
@@ -95,6 +96,12 @@ ruleTester.run("wxss-import", rule, {
       code: `@import "/ghost.wxss";`,
       filename: file("pages/index/index.wxss"),
       options: opts({ ignorePatterns: ["^/ghost"] }),
+    },
+    // 13. appJsonPath 支持传 project.config.json，按 miniprogramRoot 定位 app.json
+    {
+      code: `@import "/styles/common.wxss";`,
+      filename: file("pages/index/index.wxss"),
+      options: [{ appJsonPath: PROJECT_CONFIG }],
     },
   ],
 

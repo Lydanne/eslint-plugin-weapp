@@ -10,6 +10,7 @@ const rule = require("../../../lib/rules/wx-navigate");
 
 const ROOT = path.resolve(__dirname, "../../fixtures/miniprogram");
 const APP_JSON = path.join(ROOT, "app.json");
+const PROJECT_CONFIG = path.resolve(__dirname, "../../fixtures/project.config.json");
 
 function file(...segments) {
   return path.join(ROOT, ...segments);
@@ -136,6 +137,12 @@ ruleTester.run("wx-navigate", rule, {
       code: "wx.redirectTo({ url: '/subA/pages/a1/a1' });",
       filename: file("pages/index/index.js"),
       options: opts({ ignorePatterns: ["^/subA/"] }),
+    },
+    // 15. appJsonPath 支持传 project.config.json，按 miniprogramRoot 定位 app.json
+    {
+      code: "wx.navigateTo({ url: '/pages/detail/detail' });",
+      filename: file("pages/index/index.js"),
+      options: [{ appJsonPath: PROJECT_CONFIG }],
     },
   ],
 

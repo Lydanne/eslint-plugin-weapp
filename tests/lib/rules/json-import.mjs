@@ -13,6 +13,7 @@ const { clearCache } = require("../../../lib/import/app-json");
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "../../fixtures/miniprogram");
 const APP_JSON = path.join(ROOT, "app.json");
+const PROJECT_CONFIG = path.resolve(__dirname, "../../fixtures/project.config.json");
 
 function file(...segments) {
   return path.join(ROOT, ...segments);
@@ -101,6 +102,12 @@ ruleTester.run("json-import", rule, {
       code: `{ "usingComponents": { "x": "/no/where" } }`,
       filename: file("pages/index/index.json"),
       options: opts({ ignorePatterns: ["^/no/"] }),
+    },
+    // 14. appJsonPath 支持传 project.config.json，按 miniprogramRoot 定位 app.json
+    {
+      code: `{ "usingComponents": { "hello": "/components/hello/hello" } }`,
+      filename: file("pages/index/index.json"),
+      options: [{ appJsonPath: PROJECT_CONFIG }],
     },
   ],
 

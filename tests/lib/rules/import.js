@@ -10,6 +10,7 @@ const rule = require("../../../lib/rules/import");
 
 const ROOT = path.resolve(__dirname, "../../fixtures/miniprogram");
 const APP_JSON = path.join(ROOT, "app.json");
+const PROJECT_CONFIG = path.resolve(__dirname, "../../fixtures/project.config.json");
 
 function file(...segments) {
   return path.join(ROOT, ...segments);
@@ -213,6 +214,12 @@ ruleTester.run("import", rule, {
       code: "require('/utils/util');",
       filename: file("pages/index/index.js"),
       options: opts({ ignorePatterns: ["[bad-regex"] }),
+    },
+    // 25. appJsonPath 支持传 project.config.json，按 miniprogramRoot 定位 app.json
+    {
+      code: "require('/utils/util');",
+      filename: file("pages/index/index.js"),
+      options: [{ appJsonPath: PROJECT_CONFIG }],
     },
   ],
 
