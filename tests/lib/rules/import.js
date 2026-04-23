@@ -9,7 +9,6 @@ const { clearCache } = require("../../../lib/import/app-json");
 const rule = require("../../../lib/rules/import");
 
 const ROOT = path.resolve(__dirname, "../../fixtures/miniprogram");
-const APP_JSON = path.join(ROOT, "app.json");
 const PROJECT_CONFIG = path.resolve(__dirname, "../../fixtures/project.config.json");
 
 function file(...segments) {
@@ -17,7 +16,7 @@ function file(...segments) {
 }
 
 function opts(extra) {
-  return [Object.assign({ appJsonPath: APP_JSON }, extra || {})];
+  return [Object.assign({ projectConfigPath: PROJECT_CONFIG }, extra || {})];
 }
 
 const ruleTester = new RuleTester({
@@ -32,10 +31,10 @@ clearCache();
 
 ruleTester.run("import", rule, {
   valid: [
-    // 1. 未配置 appJsonPath → 规则应静默跳过
+    // 1. 未配置 projectConfigPath 且找不到 project.config.json → 规则应静默跳过
     {
       code: "require('./not-exist');",
-      filename: file("pages/index/index.js"),
+      filename: path.resolve(__dirname, "../../no-project/pages/index/index.js"),
     },
     // 2. 主包内相对路径引用主包工具
     {
@@ -97,7 +96,7 @@ ruleTester.run("import", rule, {
       filename: file("pages/index/index.js"),
       options: [
         {
-          appJsonPath: APP_JSON,
+          projectConfigPath: PROJECT_CONFIG,
           checks: {
             pathExists: false,
             packageBoundary: false,
@@ -215,11 +214,10 @@ ruleTester.run("import", rule, {
       filename: file("pages/index/index.js"),
       options: opts({ ignorePatterns: ["[bad-regex"] }),
     },
-    // 25. appJsonPath 支持传 project.config.json，按 miniprogramRoot 定位 app.json
+    // 25. 未配置 projectConfigPath 时，自动向上查找 project.config.json 定位 app.json
     {
       code: "require('/utils/util');",
       filename: file("pages/index/index.js"),
-      options: [{ appJsonPath: PROJECT_CONFIG }],
     },
   ],
 
@@ -280,12 +278,17 @@ ruleTester.run("import", rule, {
       options: opts(),
       errors: [{ messageId: "notResolved" }],
     },
-    // 13. appJsonPath 指向不存在文件 → 应在文件级报一次
+    // 13. projectConfigPath 指向不存在文件 → 应在文件级报一次
     {
       code: "require('./x');",
       filename: file("pages/index/index.js"),
       options: [
-        { appJsonPath: path.join(ROOT, "__missing__.json") },
+        {
+          projectConfigPath: path.resolve(
+            __dirname,
+            "../../fixtures/__missing_project.config.json"
+          ),
+        },
       ],
       errors: [{ messageId: "appJsonNotFound" }],
     },

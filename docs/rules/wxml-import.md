@@ -37,7 +37,7 @@ module.exports = [
     rules: {
       "weapp2/wxml-import": [
         "error",
-        { appJsonPath: path.resolve(__dirname, "miniprogram/app.json") },
+        { projectConfigPath: path.resolve(__dirname, "project.config.json") },
       ],
     },
   },
@@ -48,7 +48,7 @@ module.exports = [
 
 | 选项                     | 类型       | 默认值                        | 说明                          |
 | :----------------------- | :--------- | :---------------------------- | :---------------------------- |
-| `appJsonPath`            | `string`   | —（必填）                     | `app.json` 或 `project.config.json` 路径；传 `project.config.json` 时按 `miniprogramRoot` 定位 `app.json` |
+| `projectConfigPath`            | `string`   | 自动查找 `project.config.json` | `project.config.json` 路径               |
 | `miniprogramRoot`        | `string`   | 解析后的 `app.json` 所在目录   | 自定义小程序根                |
 | `checks.pathExists`      | `boolean`  | `true`                        | 关闭后不再报未解析错误        |
 | `checks.packageBoundary` | `boolean`  | `true`                        | 关闭后不再校验跨分包          |

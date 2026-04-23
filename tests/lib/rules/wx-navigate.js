@@ -9,7 +9,6 @@ const { clearCache } = require("../../../lib/import/app-json");
 const rule = require("../../../lib/rules/wx-navigate");
 
 const ROOT = path.resolve(__dirname, "../../fixtures/miniprogram");
-const APP_JSON = path.join(ROOT, "app.json");
 const PROJECT_CONFIG = path.resolve(__dirname, "../../fixtures/project.config.json");
 
 function file(...segments) {
@@ -17,7 +16,7 @@ function file(...segments) {
 }
 
 function opts(extra) {
-  return [Object.assign({ appJsonPath: APP_JSON }, extra || {})];
+  return [Object.assign({ projectConfigPath: PROJECT_CONFIG }, extra || {})];
 }
 
 const ruleTester = new RuleTester({
@@ -31,10 +30,10 @@ clearCache();
 
 ruleTester.run("wx-navigate", rule, {
   valid: [
-    // 1. 未配置 appJsonPath → 规则静默跳过（无参 wx.navigateTo 也应该不报）
+    // 1. 未配置 projectConfigPath 且找不到 project.config.json → 规则静默跳过
     {
       code: "wx.navigateTo({ url: '/pages/not-found/not-found' });",
-      filename: file("pages/index/index.js"),
+      filename: path.resolve(__dirname, "../../no-project/pages/index/index.js"),
     },
     // 2. 合法页面跳转
     {
@@ -138,11 +137,10 @@ ruleTester.run("wx-navigate", rule, {
       filename: file("pages/index/index.js"),
       options: opts({ ignorePatterns: ["^/subA/"] }),
     },
-    // 15. appJsonPath 支持传 project.config.json，按 miniprogramRoot 定位 app.json
+    // 15. 未配置 projectConfigPath 时，自动向上查找 project.config.json 定位 app.json
     {
       code: "wx.navigateTo({ url: '/pages/detail/detail' });",
       filename: file("pages/index/index.js"),
-      options: [{ appJsonPath: PROJECT_CONFIG }],
     },
   ],
 
@@ -191,11 +189,18 @@ ruleTester.run("wx-navigate", rule, {
       options: opts(),
       errors: [{ messageId: "mainImportSubpackage" }],
     },
-    // 7. appJsonPath 指向不存在文件 → 文件级报一次
+    // 7. projectConfigPath 指向不存在文件 → 文件级报一次
     {
       code: "wx.navigateTo({ url: '/pages/index/index' });",
       filename: file("pages/index/index.js"),
-      options: [{ appJsonPath: path.join(ROOT, "__missing__.json") }],
+      options: [
+        {
+          projectConfigPath: path.resolve(
+            __dirname,
+            "../../fixtures/__missing_project.config.json"
+          ),
+        },
+      ],
       errors: [{ messageId: "appJsonNotFound" }],
     },
     // 8. apis 选项扩展：支持自定义跳转函数

@@ -36,7 +36,7 @@ description: 基于 app.json 校验 wx.navigateTo / redirectTo / switchTab / reL
 
 ## 配置
 
-此规则**必须**通过 `appJsonPath` 选项显式指定 `app.json` 的位置；未配置时规则静默跳过。`appJsonPath` 也可以指向微信开发者工具的 `project.config.json`，规则会按其所在目录和 `miniprogramRoot` 自动定位 `app.json`。
+此规则会优先使用 `projectConfigPath` 显式指定的 `project.config.json`；未配置时，会从当前被 lint 文件所在目录向上查找微信开发者工具的 `project.config.json`，并按其 `miniprogramRoot` 自动定位 `app.json`。如果两者都找不到，规则静默跳过。
 
 ### ESLint Flat Config
 
@@ -53,7 +53,7 @@ module.exports = [
       "weapp2/wx-navigate": [
         "error",
         {
-          appJsonPath: path.resolve(__dirname, "miniprogram/app.json"),
+          projectConfigPath: path.resolve(__dirname, "project.config.json"),
         },
       ],
     },
@@ -70,10 +70,7 @@ module.exports = {
     "weapp2/wx-navigate": [
       "error",
       {
-        appJsonPath: require("path").resolve(
-          __dirname,
-          "miniprogram/app.json"
-        ),
+        projectConfigPath: require("path").resolve(__dirname, "project.config.json"),
       },
     ],
   },
@@ -84,7 +81,7 @@ module.exports = {
 
 | 选项                     | 类型       | 默认值                                                      | 说明                                                           |
 | :----------------------- | :--------- | :---------------------------------------------------------- | :------------------------------------------------------------- |
-| `appJsonPath`            | `string`   | —（必填）                                                   | `app.json` 或 `project.config.json` 的绝对或相对路径；传 `project.config.json` 时按 `miniprogramRoot` 定位 `app.json` |
+| `projectConfigPath`            | `string`   | 自动查找 `project.config.json`                              | `project.config.json` 绝对或相对路径                                      |
 | `miniprogramRoot`        | `string`   | 解析后的 `app.json` 所在目录                                 | monorepo / 自定义根目录时覆盖                                  |
 | `extensions`             | `string[]` | `['.js','.ts','.mjs','.cjs','.json','.wxs']`                | url 解析时的扩展名补全顺序                                     |
 | `apis`                   | `string[]` | `['navigateTo','redirectTo','switchTab','reLaunch']`        | 需要校验的 `wx.*` 方法名；可扩展自定义跳转封装（见下）         |

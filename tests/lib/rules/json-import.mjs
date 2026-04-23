@@ -20,7 +20,7 @@ function file(...segments) {
 }
 
 function opts(extra) {
-  return [Object.assign({ appJsonPath: APP_JSON }, extra || {})];
+  return [Object.assign({ projectConfigPath: PROJECT_CONFIG }, extra || {})];
 }
 
 const ruleTester = new RuleTester({
@@ -86,10 +86,10 @@ ruleTester.run("json-import", rule, {
       filename: APP_JSON,
       options: opts(),
     },
-    // 11. 未配置 appJsonPath → 规则静默跳过
+    // 11. 未配置 projectConfigPath 且找不到 project.config.json → 规则静默跳过
     {
       code: `{ "usingComponents": { "hello": "/no-such/thing" } }`,
-      filename: file("pages/index/index.json"),
+      filename: path.resolve(__dirname, "../../no-project/pages/index/index.json"),
     },
     // 12. 文件不在 miniprogramRoot → 跳过
     {
@@ -103,11 +103,10 @@ ruleTester.run("json-import", rule, {
       filename: file("pages/index/index.json"),
       options: opts({ ignorePatterns: ["^/no/"] }),
     },
-    // 14. appJsonPath 支持传 project.config.json，按 miniprogramRoot 定位 app.json
+    // 14. 未配置 projectConfigPath 时，自动向上查找 project.config.json 定位 app.json
     {
       code: `{ "usingComponents": { "hello": "/components/hello/hello" } }`,
       filename: file("pages/index/index.json"),
-      options: [{ appJsonPath: PROJECT_CONFIG }],
     },
   ],
 
@@ -194,11 +193,18 @@ ruleTester.run("json-import", rule, {
       options: opts(),
       errors: [{ messageId: "aliasNotSupported" }],
     },
-    // 10. appJsonPath 指向不存在文件 → Document 级报错
+    // 10. projectConfigPath 指向不存在文件 → Document 级报错
     {
       code: `{ "usingComponents": { "x": "/x" } }`,
       filename: file("pages/index/index.json"),
-      options: [{ appJsonPath: path.join(ROOT, "__missing__.json") }],
+      options: [
+        {
+          projectConfigPath: path.resolve(
+            __dirname,
+            "../../fixtures/__missing_project.config.json"
+          ),
+        },
+      ],
       errors: [{ messageId: "appJsonNotFound" }],
     },
   ],

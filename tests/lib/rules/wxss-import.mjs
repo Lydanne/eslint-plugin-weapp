@@ -11,7 +11,6 @@ const { clearCache } = require("../../../lib/import/app-json");
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "../../fixtures/miniprogram");
-const APP_JSON = path.join(ROOT, "app.json");
 const PROJECT_CONFIG = path.resolve(__dirname, "../../fixtures/project.config.json");
 
 function file(...segments) {
@@ -19,7 +18,7 @@ function file(...segments) {
 }
 
 function opts(extra) {
-  return [Object.assign({ appJsonPath: APP_JSON }, extra || {})];
+  return [Object.assign({ projectConfigPath: PROJECT_CONFIG }, extra || {})];
 }
 
 const ruleTester = new RuleTester({
@@ -80,10 +79,10 @@ ruleTester.run("wxss-import", rule, {
       filename: file("pages/index/index.wxss"),
       options: opts(),
     },
-    // 10. 未配置 appJsonPath → 规则静默跳过
+    // 10. 未配置 projectConfigPath 且找不到 project.config.json → 规则静默跳过
     {
       code: `@import "/not/exist.wxss";`,
-      filename: file("pages/index/index.wxss"),
+      filename: path.resolve(__dirname, "../../no-project/pages/index/index.wxss"),
     },
     // 11. 文件不在 miniprogramRoot → 跳过
     {
@@ -97,11 +96,10 @@ ruleTester.run("wxss-import", rule, {
       filename: file("pages/index/index.wxss"),
       options: opts({ ignorePatterns: ["^/ghost"] }),
     },
-    // 13. appJsonPath 支持传 project.config.json，按 miniprogramRoot 定位 app.json
+    // 13. 未配置 projectConfigPath 时，自动向上查找 project.config.json 定位 app.json
     {
       code: `@import "/styles/common.wxss";`,
       filename: file("pages/index/index.wxss"),
-      options: [{ appJsonPath: PROJECT_CONFIG }],
     },
   ],
 
@@ -167,11 +165,18 @@ ruleTester.run("wxss-import", rule, {
       options: opts(),
       errors: [{ messageId: "notResolved" }],
     },
-    // 8. appJsonPath 指向不存在文件 → 根节点级报
+    // 8. projectConfigPath 指向不存在文件 → 根节点级报
     {
       code: `@import "/x.wxss";`,
       filename: file("pages/index/index.wxss"),
-      options: [{ appJsonPath: path.join(ROOT, "__missing__.json") }],
+      options: [
+        {
+          projectConfigPath: path.resolve(
+            __dirname,
+            "../../fixtures/__missing_project.config.json"
+          ),
+        },
+      ],
       errors: [{ messageId: "appJsonNotFound" }],
     },
   ],
