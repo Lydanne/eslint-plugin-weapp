@@ -92,6 +92,40 @@ ruleTester.run("import", rule, {
       filename: file("pages/index/index.js"),
       options: opts({ bareModuleResolution: "miniprogramNpm" }),
     },
+    // 7f. 独立分包内使用 npm 包：该包存在于"独立分包自己的 miniprogram_npm"下 → 合法
+    //     (packageJson 模式；subInd/miniprogram_npm/lodash 已单独构建)
+    {
+      code: "const _ = require('lodash');",
+      filename: file("subInd/pages/i1/i1.js"),
+      options: opts(),
+    },
+    // 7g. 同 7f，但 miniprogramNpm 模式——resolver 从 subInd 目录向上查找时先命中 subInd/miniprogram_npm
+    {
+      code: "const _ = require('lodash');",
+      filename: file("subInd/pages/i1/i1.js"),
+      options: opts({ bareModuleResolution: "miniprogramNpm" }),
+    },
+    // 7h. 独立分包内 npm 未构建：默认会报 independentNpmNotSupported；
+    //     关闭 checks.independentNpm 后不再报，让用户按自身工程情况放行
+    {
+      code: "import { foo } from '@wekit/shared';",
+      filename: file("subInd/pages/i1/i1.js"),
+      options: opts({ checks: { independentNpm: false } }),
+    },
+    // 7i. auto 模式（默认）：miniprogram_npm 里实际构建了，但 package.json 里没声明 → 合法
+    //     覆盖 monorepo 子包只维护 miniprogram_npm 不维护 package.json 的场景
+    {
+      code: "require('built-but-undeclared');",
+      filename: file("pages/index/index.js"),
+      options: opts(),
+    },
+    // 7j. 普通（非独立）分包内部也可以有自己的 miniprogram_npm：
+    //     resolver 从 subA/pages/a1 向上查找时先命中 subA/miniprogram_npm/sub-only-pkg → 合法
+    {
+      code: "require('sub-only-pkg');",
+      filename: file("subA/pages/a1/a1.js"),
+      options: opts(),
+    },
     // 8. 动态 import() 配合 alias
     {
       code: "import('@/utils/util');",
@@ -469,6 +503,71 @@ ruleTester.run("import", rule, {
         {
           messageId: "relativePrefixRequired",
           data: { request: "@wekit/shared" },
+        },
+      ],
+    },
+    // 24. 独立分包内使用 npm 包但"独立分包自己的 miniprogram_npm"下没有 → 报 independentNpmNotSupported
+    //     packageJson 模式：package.json 声明过 → 不会走 relativePrefixRequired；
+    //     独立分包又无法用主包的 miniprogram_npm → 必须报这个新 messageId。
+    {
+      code: "import { foo } from '@wekit/shared';",
+      filename: file("subInd/pages/i1/i1.js"),
+      options: opts(),
+      errors: [
+        {
+          messageId: "independentNpmNotSupported",
+          data: {
+            request: "@wekit/shared",
+            from: "subInd",
+            pkgName: "@wekit/shared",
+          },
+        },
+      ],
+    },
+    // 25. 独立分包 + miniprogramNpm 模式：main-only-pkg 只在主包 miniprogram_npm 下构建（subInd 自己没有）
+    //     → resolver 会命中主包副本，owner="" !== "subInd" → 报 independentNpmNotSupported
+    {
+      code: "require('main-only-pkg');",
+      filename: file("subInd/pages/i1/i1.js"),
+      options: opts({ bareModuleResolution: "miniprogramNpm" }),
+      errors: [
+        {
+          messageId: "independentNpmNotSupported",
+          data: {
+            request: "main-only-pkg",
+            from: "subInd",
+            pkgName: "main-only-pkg",
+          },
+        },
+      ],
+    },
+    // 26. 同 25 但默认 auto 模式（main-only-pkg 在 package.json 已声明 → 不会报前缀错），
+    //     独立分包仍只能读自己 miniprogram_npm → 同样报 independentNpmNotSupported
+    {
+      code: "require('main-only-pkg');",
+      filename: file("subInd/pages/i1/i1.js"),
+      options: opts(),
+      errors: [
+        {
+          messageId: "independentNpmNotSupported",
+          data: {
+            request: "main-only-pkg",
+            from: "subInd",
+            pkgName: "main-only-pkg",
+          },
+        },
+      ],
+    },
+    // 27. 显式 packageJson 模式：miniprogram_npm 里已构建但 package.json 里未声明 → 严格报前缀错。
+    //     用来对照 valid 7i（auto 模式下同一 request 合法），验证 packageJson 模式不看 miniprogram_npm
+    {
+      code: "require('built-but-undeclared');",
+      filename: file("pages/index/index.js"),
+      options: opts({ bareModuleResolution: "packageJson" }),
+      errors: [
+        {
+          messageId: "relativePrefixRequired",
+          data: { request: "built-but-undeclared" },
         },
       ],
     },
