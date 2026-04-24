@@ -47,15 +47,9 @@ ruleTester.run("import", rule, {
       filename: file("pages/index/index.js"),
       options: opts(),
     },
-    // 4. 小程序绝对路径（/ 开头）
+    // 4. 子包 → 主包：相对路径允许
     {
-      code: "require('/utils/util');",
-      filename: file("pages/index/index.js"),
-      options: opts(),
-    },
-    // 5. 子包 → 主包允许
-    {
-      code: "require('/utils/util');",
+      code: "require('../../../utils/util');",
       filename: file("subA/pages/a1/a1.js"),
       options: opts(),
     },
@@ -77,9 +71,9 @@ ruleTester.run("import", rule, {
       filename: file("pages/index/index.js"),
       options: opts(),
     },
-    // 8. 动态 import()
+    // 8. 动态 import() 配合 alias
     {
-      code: "import('/utils/util');",
+      code: "import('@/utils/util');",
       filename: file("pages/index/index.js"),
       options: opts(),
     },
@@ -141,19 +135,19 @@ ruleTester.run("import", rule, {
     },
     // 21a. 关闭 crossSubpackage 子开关后：分包 → 分包 静默
     {
-      code: "require('/subB/pages/b1/b1');",
+      code: "require('../../../subB/pages/b1/b1');",
       filename: file("subA/pages/a1/a1.js"),
       options: opts({ checks: { crossSubpackage: false } }),
     },
     // 21b. 关闭 mainImportSubpackage 子开关后：主包 → 分包 静默
     {
-      code: "require('/subA/components/foo/foo');",
+      code: "require('../../subA/components/foo/foo');",
       filename: file("pages/index/index.js"),
       options: opts({ checks: { mainImportSubpackage: false } }),
     },
     // 21c. 关闭 independentCross 子开关后：独立分包 → 外部 静默
     {
-      code: "require('/utils/util');",
+      code: "require('../../../utils/util');",
       filename: file("subInd/pages/i1/i1.js"),
       options: opts({ checks: { independentCross: false } }),
     },
@@ -171,25 +165,25 @@ ruleTester.run("import", rule, {
     },
     // 23a. 分包异步化 - callback 风格：分包 A → 分包 B（官方合法）
     {
-      code: "require('/subB/pages/b1/b1', (mod) => { console.log(mod); });",
+      code: "require('../../../subB/pages/b1/b1', (mod) => { console.log(mod); });",
       filename: file("subA/pages/a1/a1.js"),
       options: opts(),
     },
     // 23b. 分包异步化 - callback 风格：主包 → 分包（官方合法）
     {
-      code: "require('/subA/components/foo/foo', (mod) => {}, ({errMsg}) => {});",
+      code: "require('../../subA/components/foo/foo', (mod) => {}, ({errMsg}) => {});",
       filename: file("pages/index/index.js"),
       options: opts(),
     },
     // 23c. 分包异步化 - callback 风格：独立分包 → 主包（官方合法）
     {
-      code: "require('/utils/util', (mod) => {});",
+      code: "require('../../../utils/util', (mod) => {});",
       filename: file("subInd/pages/i1/i1.js"),
       options: opts(),
     },
     // 23d. 分包异步化 - Promise 风格：require.async
     {
-      code: "require.async('/subB/pages/b1/b1').then((mod) => {});",
+      code: "require.async('../../../subB/pages/b1/b1').then((mod) => {});",
       filename: file("subA/pages/a1/a1.js"),
       options: opts(),
     },
@@ -200,6 +194,7 @@ ruleTester.run("import", rule, {
       options: opts(),
     },
     // 24. ignorePatterns：匹配到的 request 整条跳过所有检查
+    //     只要命中 ignorePatterns，连绝对路径禁用检查也会静默
     {
       code: "require('/subA/components/foo/foo');",
       filename: file("pages/index/index.js"),
@@ -215,26 +210,81 @@ ruleTester.run("import", rule, {
     },
     // 24c. ignorePatterns：非法正则源码被静默忽略，不会让整个规则崩
     {
-      code: "require('/utils/util');",
+      code: "require('../../utils/util');",
       filename: file("pages/index/index.js"),
       options: opts({ ignorePatterns: ["[bad-regex"] }),
     },
     // 25. 未配置 projectConfigPath 时，自动向上查找 project.config.json 定位 app.json
     {
-      code: "require('/utils/util');",
+      code: "require('../../utils/util');",
       filename: file("pages/index/index.js"),
     },
   ],
 
   invalid: [
-    // 1. 主包引用分包 (绝对路径)
+    // 1. JS 绝对路径 require → jsAbsolutePathNotSupported
+    //    原来这里靠 /subA 测 mainImportSubpackage；新规则下绝对路径优先抦住（运行时也会爆）
     {
       code: "require('/subA/components/foo/foo');",
       filename: file("pages/index/index.js"),
       options: opts(),
-      errors: [{ messageId: "mainImportSubpackage" }],
+      errors: [
+        {
+          messageId: "jsAbsolutePathNotSupported",
+          data: { request: "/subA/components/foo/foo" },
+        },
+      ],
     },
-    // 2. 主包引用分包 (相对路径)
+    // 1b. JS 绝对路径 import 声明 → jsAbsolutePathNotSupported
+    {
+      code: "import x from '/not/exist';",
+      filename: file("pages/index/index.js"),
+      options: opts(),
+      errors: [
+        {
+          messageId: "jsAbsolutePathNotSupported",
+          data: { request: "/not/exist" },
+        },
+      ],
+    },
+    // 1c. JS 绝对路径 动态 import() → jsAbsolutePathNotSupported
+    {
+      code: "import('/utils/util');",
+      filename: file("pages/index/index.js"),
+      options: opts(),
+      errors: [
+        {
+          messageId: "jsAbsolutePathNotSupported",
+          data: { request: "/utils/util" },
+        },
+      ],
+    },
+    // 1d. JS 绝对路径 分包异步化 require(path, cb) → jsAbsolutePathNotSupported
+    //     异步化本身合法，但依然不能用绝对路径
+    {
+      code: "require('/subB/pages/b1/b1', (mod) => {});",
+      filename: file("subA/pages/a1/a1.js"),
+      options: opts(),
+      errors: [
+        {
+          messageId: "jsAbsolutePathNotSupported",
+          data: { request: "/subB/pages/b1/b1" },
+        },
+      ],
+    },
+    // 1e. JS 绝对路径 require.async → jsAbsolutePathNotSupported
+    {
+      code: "require.async('/subB/pages/b1/b1').then(() => {});",
+      filename: file("subA/pages/a1/a1.js"),
+      options: opts(),
+      errors: [
+        {
+          messageId: "jsAbsolutePathNotSupported",
+          data: { request: "/subB/pages/b1/b1" },
+        },
+      ],
+    },
+    // 2. 主包引用分包 (相对路径) → mainImportSubpackage
     {
       code: "require('../../subA/components/foo/foo');",
       filename: file("pages/index/index.js"),
@@ -248,30 +298,23 @@ ruleTester.run("import", rule, {
       options: opts(),
       errors: [{ messageId: "notResolved" }],
     },
-    // 4. 不存在的绝对路径
+    // 5. 跨分包 (相对路径) → crossSubpackage
     {
-      code: "import x from '/not/exist';",
-      filename: file("pages/index/index.js"),
-      options: opts(),
-      errors: [{ messageId: "notResolved" }],
-    },
-    // 5. 跨分包
-    {
-      code: "require('/subB/pages/b1/b1');",
+      code: "require('../../../subB/pages/b1/b1');",
       filename: file("subA/pages/a1/a1.js"),
       options: opts(),
       errors: [{ messageId: "crossSubpackage" }],
     },
-    // 6. 独立分包引用主包
+    // 6. 独立分包引用主包 (相对路径) → independentCross
     {
-      code: "require('/utils/util');",
+      code: "require('../../../utils/util');",
       filename: file("subInd/pages/i1/i1.js"),
       options: opts(),
       errors: [{ messageId: "independentCross" }],
     },
-    // 7. 独立分包引用其他子包
+    // 7. 独立分包引用其他子包 (相对路径) → independentCross
     {
-      code: "require('/subA/pages/a1/a1');",
+      code: "require('../../../subA/pages/a1/a1');",
       filename: file("subInd/pages/i1/i1.js"),
       options: opts(),
       errors: [{ messageId: "independentCross" }],
@@ -313,16 +356,16 @@ ruleTester.run("import", rule, {
       options: opts(),
       errors: [{ messageId: "mainImportSubpackage" }],
     },
-    // 16b. 分包异步化 - 路径写错仍然报 notResolved
+    // 16b. 分包异步化 - 路径写错 (相对路径) 仍然报 notResolved
     {
-      code: "require('/subA/pages/does-not-exist', (mod) => {});",
+      code: "require('../../subA/pages/does-not-exist', (mod) => {});",
       filename: file("pages/index/index.js"),
       options: opts(),
       errors: [{ messageId: "notResolved" }],
     },
-    // 16c. require.async - 路径写错仍然报 notResolved
+    // 16c. require.async - 路径写错 (相对路径) 仍然报 notResolved
     {
-      code: "require.async('/subA/pages/does-not-exist').then(mod => {});",
+      code: "require.async('../../subA/pages/does-not-exist').then(mod => {});",
       filename: file("pages/index/index.js"),
       options: opts(),
       errors: [{ messageId: "notResolved" }],
