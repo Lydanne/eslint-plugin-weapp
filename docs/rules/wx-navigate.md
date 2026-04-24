@@ -62,26 +62,78 @@ module.exports = [
 
 ### 选项表
 
-| 选项                     | 类型       | 默认值                                                      | 说明                                                           |
-| :----------------------- | :--------- | :---------------------------------------------------------- | :------------------------------------------------------------- |
-| `projectConfigPath`            | `string`   | 自动查找 `project.config.json`                              | `project.config.json` 绝对或相对路径                                      |
-| `miniprogramRoot`        | `string`   | 解析后的 `app.json` 所在目录                                 | monorepo / 自定义根目录时覆盖                                  |
-| `apis`                   | `string[]` | `['navigateTo','redirectTo','switchTab','reLaunch']`        | 需要校验的 `wx.*` 方法名；可扩展自定义跳转封装（见下）         |
-| `checks.pathExists`      | `boolean`  | `true`                                                      | 关闭后不再报 `notResolved`                                     |
-| `requireRelativePrefix`  | `boolean`  | `true`                                                      | 相对跳转必须显式写 `./` 或 `../`，不允许省略为 `detail`；设为 `false` 可兼容裸相对跳转 |
-| `ignorePatterns`         | `string[]` | `[]`                                                        | 正则源码数组，匹配 `url` 原始字符串；命中任一即整条跳过。语义同 [`weapp2/import#ignorepatterns`](./import.md#ignorepatterns) |
+| 选项 | 类型 | 默认值 | 说明 |
+| :--- | :--- | :--- | :--- |
+| `projectConfigPath` | `string` | 自动查找 `project.config.json` | `project.config.json` 绝对或相对路径 |
+| `miniprogramRoot` | `string` | 解析后的 `app.json` 所在目录 | monorepo / 自定义根目录时覆盖 |
+| `callees` | `Array<string \| CalleeSpec>` | `[]` | 自定义跳转调用的匹配清单，在**内置默认**之外追加。内置默认始终生效：`wx.navigateTo` / `wx.redirectTo` / `wx.switchTab` / `wx.reLaunch`（详见下文） |
+| `checks.pathExists` | `boolean` | `true` | 关闭后不再报 `notResolved` |
+| `requireRelativePrefix` | `boolean` | `true` | 相对跳转必须显式写 `./` 或 `../`，不允许省略为 `detail`；设为 `false` 可兼容裸相对跳转 |
+| `ignorePatterns` | `string[]` | `[]` | 正则源码数组，匹配 `url` 原始字符串；命中任一即整条跳过。语义同 [`weapp2/import#ignorepatterns`](./import.md#ignorepatterns) |
 
-### 扩展 `apis`：覆盖自定义跳转封装
+### 内置默认
 
-如果团队内有对 `wx.navigateTo` 的二次封装（例如 `wx.safeNavigateTo`），加到 `apis` 即可：
+以下四个原生跳转 API **始终**被校验，无需配置：
 
-```json
-{
-  "apis": ["navigateTo", "redirectTo", "switchTab", "reLaunch", "safeNavigateTo"]
-}
+- `wx.navigateTo({ url })`
+- `wx.redirectTo({ url })`
+- `wx.switchTab({ url })`
+- `wx.reLaunch({ url })`
+
+想追加的包装（包括 `wx.safeNavigateTo` 这种 `wx.*` 二次封装）全部通过 `callees` 配置，参见下文。
+
+### 扩展 `callees`：覆盖任意包装（wx.\* 二次封装 / 模块 / 裸函数 / 实例方法 / 位置参数）
+
+项目里若把跳转 API 封装成自己的 `wx.customNavigate` / 模块对象 / 裸函数 / 实例方法，或者参数形态不是 `{ url }`，用 `callees` 伸展。
+
+**语义**：
+
+- 每项可以是一个 **dot-path 字符串**，对调用链做**精确匹配**。`this` 作为特殊首段。默认从第一个对象参数的 `url` 键读取 url。
+- 或者是对象 `{ match, url: { key?: string, arg?: number } }`：
+  - `url.key` —— 从第一个对象参数的指定键读取（例如 `path`）。
+  - `url.arg` —— 从第 `N` 个位置参数读取字符串字面量。
+  - 两者互斥；都不提供则默认 `{ key: "url" }`。
+- 结果与内置默认取**并集**；同一 dot-path + 同一 url 来源会去重。
+
+**示例**：
+
+```js
+// eslint.config.js
+"weapp2/wx-navigate": ["error", {
+  callees: [
+    // 0. wx.* 二次封装：wx.safeNavigateTo({ url })
+    "wx.safeNavigateTo",
+
+    // 1. 模块对象：router.navigateTo({ url })
+    "router.navigateTo",
+    "router.redirectTo",
+
+    // 2. 裸函数：import { navigateTo } from '@/utils/router'; navigateTo({ url })
+    "navigateTo",
+
+    // 3. 实例方法：this.$router.push({ url })
+    "this.$router.push",
+    "this.$router.replace",
+
+    // 4. 位置参数：router.go('/pages/x/x')
+    { match: "router.go", url: { arg: 0 } },
+
+    // 5. 自定义对象键：router.push({ path: '/pages/x/x' })
+    { match: "router.push", url: { key: "path" } },
+
+    // 6. 同一 match 多打混（对象参数或字符串参数都接受）
+    { match: "router.open", url: { key: "url" } },
+    { match: "router.open", url: { arg: 0 } },
+  ],
+}]
 ```
 
-规则只识别 `wx.<method>({ url: '...' })` 这一 pattern，变量承载的对象或者自定义的 `router.navigateTo(...)` 并不会被捕获 —— 这是规则在"误报 vs 漏报"之间的保守折中。
+**识别规则**（保守以避免误报）：
+
+- 调用链必须是**成员表达式或标识符**的链。`computed` 访问只在键是字符串字面量时接受（`a["b"]` 和 `a.b` 等价）。
+- 不作作用域分析：`const r = router; r.navigateTo(...)` **不**会被匹配。也不支持通配 `*.navigateTo`，请把你实际用的路径列出来。
+- url 参数是表达式 / 模板含插值 / 变量 → 规则安全跳过，不产生报告。
+- 内置默认（四个 `wx.*`）不可禁用；项目里如果不再直接用这些 API，默认 matcher 也不会触发（无调用 = 无匹配）。若确需禁用直接 `wx.*` 调用，请用 `no-restricted-syntax` 等规则在其它层面控制。
 
 ## 示例
 
@@ -131,11 +183,10 @@ wx.navigateTo({ url: p });
 | `import` / `require` / `export from` 的目标 | `weapp2/import` |
 | `.wxs` 里的 `require` | `weapp2/import` |
 | `wx.navigateTo / redirectTo / switchTab / reLaunch` 的 `url` | `weapp2/wx-navigate`（本规则） |
-| `router.navigateTo(...)` / 自封装跳转 | 默认不管；通过 `apis` 扩展覆盖 wx.* 封装 |
+| `router.navigateTo(...)` / `wx.safeNavigateTo(...)` 等自封装跳转 | 通过 `callees` 选项配置覆盖 |
 
 ## 局限
 
 - 仅识别字面量或无插值模板字符串作为 `url`；运行时动态拼的 url 无法校验。
-- 只识别对象字面量形态 `wx.navigateTo({ url: '...' })`；如果 `url` 藏在变量里、展开运算符里、外层函数返回值里，会被跳过。
-- `url` 不展开 `resolveAlias`：alias 只用于构建工具的静态 `import`，对运行时的 `wx.*` 跳转无效。
-- 自定义跳转封装（非 `wx.<method>`）需要通过 `apis` 配合来覆盖；对 `router.xxx`、`navigator.xxx` 目前不支持。
+- `url` 不展开 `resolveAlias`：alias 只用于构建工具的静态 `import`，对运行时的跳转无效。
+- 匹配基于语法链的精确形态（见 `callees` 识别规则）；`const r = router; r.navigateTo(...)`、`obj[expr]()` 这种经过变量中转或动态键的调用不被捕获。

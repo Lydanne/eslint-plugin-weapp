@@ -92,7 +92,7 @@ ruleTester.run("wx-navigate", rule, {
       filename: file("pages/index/index.js"),
       options: opts(),
     },
-    // 7. 不在 apis 白名单内的 API → 默认只管这四个，其它忽略
+    // 7. 不在内置默认和 callees 里的 API → 默认只管四个 wx.*，其它忽略
     {
       code: "wx.someOtherApi({ url: '/pages/not/found' });",
       filename: file("pages/index/index.js"),
@@ -109,12 +109,6 @@ ruleTester.run("wx-navigate", rule, {
       code: "wx.navigateTo({ url: 'plugin://foo/bar' });",
       filename: file("pages/index/index.js"),
       options: opts(),
-    },
-    // 11. apis 选项覆盖：只校验 navigateTo，redirectTo 被忽略
-    {
-      code: "wx.redirectTo({ url: '/pages/not-found/not-found' });",
-      filename: file("pages/index/index.js"),
-      options: opts({ apis: ["navigateTo"] }),
     },
     // 12. 禁用 pathExists 检查 → 不报
     {
@@ -164,6 +158,54 @@ ruleTester.run("wx-navigate", rule, {
       code: "wx.navigateTo({ url: '../subA/pages/a1/a1' });",
       filename: file("utils/util.js"),
       options: opts(),
+    },
+    // 18. callees 模块对象包装：router.navigateTo({ url })
+    {
+      code: "router.navigateTo({ url: '/pages/detail/detail' });",
+      filename: file("pages/index/index.js"),
+      options: opts({ callees: ["router.navigateTo"] }),
+    },
+    // 19. callees 裸函数包装：navigateTo({ url })
+    {
+      code: "navigateTo({ url: '/pages/detail/detail' });",
+      filename: file("pages/index/index.js"),
+      options: opts({ callees: ["navigateTo"] }),
+    },
+    // 20. callees 实例方法：this.$router.push({ url })
+    {
+      code: "this.$router.push({ url: '/pages/detail/detail' });",
+      filename: file("pages/index/index.js"),
+      options: opts({ callees: ["this.$router.push"] }),
+    },
+    // 21. callees 位置参数：router.go('/...')
+    {
+      code: "router.go('/pages/detail/detail');",
+      filename: file("pages/index/index.js"),
+      options: opts({
+        callees: [{ match: "router.go", url: { arg: 0 } }],
+      }),
+    },
+    // 22. callees 自定义对象键：router.push({ path: '/...' })
+    {
+      code: "router.push({ path: '/pages/detail/detail' });",
+      filename: file("pages/index/index.js"),
+      options: opts({
+        callees: [{ match: "router.push", url: { key: "path" } }],
+      }),
+    },
+    // 23. callees 动态 url → 规则安全跳过
+    {
+      code: "router.go(url);",
+      filename: file("pages/index/index.js"),
+      options: opts({
+        callees: [{ match: "router.go", url: { arg: 0 } }],
+      }),
+    },
+    // 25. callees computed + 字符串 Literal 键相等路径
+    {
+      code: "router['navigateTo']({ url: '/pages/detail/detail' });",
+      filename: file("pages/index/index.js"),
+      options: opts({ callees: ["router.navigateTo"] }),
     },
   ],
 
@@ -244,11 +286,11 @@ ruleTester.run("wx-navigate", rule, {
       ],
       errors: [{ messageId: "appJsonNotFound" }],
     },
-    // 4. apis 选项扩展：支持自定义跳转函数
+    // 4. callees 扩展 wx.* 的二次封装（例 wx.customNavigate）→ 目标未注册 → notResolved
     {
       code: "wx.customNavigate({ url: '/pages/not/found' });",
       filename: file("pages/index/index.js"),
-      options: opts({ apis: ["navigateTo", "customNavigate"] }),
+      options: opts({ callees: ["wx.customNavigate"] }),
       errors: [{ messageId: "notResolved" }],
     },
     // 5. requireRelativePrefix 默认开启：不允许省略 ./ 的相对跳转
@@ -260,6 +302,69 @@ ruleTester.run("wx-navigate", rule, {
         {
           messageId: "relativePrefixRequired",
           data: { request: "detail" },
+        },
+      ],
+    },
+    // 6. callees 模块对象包装、目标未注册 → notResolved
+    {
+      code: "router.navigateTo({ url: '/pages/not/found' });",
+      filename: file("pages/index/index.js"),
+      options: opts({ callees: ["router.navigateTo"] }),
+      errors: [{ messageId: "notResolved" }],
+    },
+    // 7. callees 裸函数包装、目标未注册 → notResolved
+    {
+      code: "navigateTo({ url: '/pages/not/found' });",
+      filename: file("pages/index/index.js"),
+      options: opts({ callees: ["navigateTo"] }),
+      errors: [{ messageId: "notResolved" }],
+    },
+    // 8. callees 实例方法、目标未注册 → notResolved
+    {
+      code: "this.$router.push({ url: '/pages/not/found' });",
+      filename: file("pages/index/index.js"),
+      options: opts({ callees: ["this.$router.push"] }),
+      errors: [{ messageId: "notResolved" }],
+    },
+    // 9. callees 位置参数、目标未注册 → notResolved
+    {
+      code: "router.go('/pages/not/found');",
+      filename: file("pages/index/index.js"),
+      options: opts({
+        callees: [{ match: "router.go", url: { arg: 0 } }],
+      }),
+      errors: [{ messageId: "notResolved" }],
+    },
+    // 10. callees 自定义对象键、目标未注册 → notResolved
+    {
+      code: "router.push({ path: '/pages/not/found' });",
+      filename: file("pages/index/index.js"),
+      options: opts({
+        callees: [{ match: "router.push", url: { key: "path" } }],
+      }),
+      errors: [{ messageId: "notResolved" }],
+    },
+    // 11. 同一 match 同时给出几种 url 来源，逐一尝试
+    {
+      code: "router.go('/pages/not/found');",
+      filename: file("pages/index/index.js"),
+      options: opts({
+        callees: [
+          { match: "router.go", url: { key: "url" } },
+          { match: "router.go", url: { arg: 0 } },
+        ],
+      }),
+      errors: [{ messageId: "notResolved" }],
+    },
+    // 12. callees + requireRelativePrefix 仍生效
+    {
+      code: "router.navigateTo({ url: '@/pages/detail/detail' });",
+      filename: file("pages/index/index.js"),
+      options: opts({ callees: ["router.navigateTo"] }),
+      errors: [
+        {
+          messageId: "relativePrefixRequired",
+          data: { request: "@/pages/detail/detail" },
         },
       ],
     },
