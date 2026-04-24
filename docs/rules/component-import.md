@@ -64,13 +64,14 @@ module.exports = [
 | `extensions`             | `string[]` | `['.js','.ts','.mjs','.cjs','.json','.wxs']` | 解析组件配置路径时的扩展名补全顺序         |
 | `checks.pathExists`      | `boolean`  | `true`                                       | 关闭后不再报未解析错误                 |
 | `checks.packageBoundary` | `boolean`  | `true`                                       | 关闭后不再校验 `usingComponents` 跨分包 |
+| `requireRelativePrefix`  | `boolean`  | `true`                                       | 本地组件路径必须显式写 `./`、`../` 或 `/`；合法 `miniprogram_npm` 裸包名不受影响 |
 | `ignorePatterns`         | `string[]` | `[]`                                         | 正则源码数组，匹配组件配置路径原始字符串；命中任一即整条跳过。语义同 [`weapp2/import#ignorepatterns`](./import.md#ignorepatterns) |
 
 ## 检查项与语义
 
 | 字段                                        | 路径语义                          | 检查项                 |
 | :------------------------------------------ | :-------------------------------- | :--------------------- |
-| `usingComponents.<name>`                    | 小程序组件引用语义（支持 `/`、`./`、裸名 `miniprogram_npm`） | 路径存在 + 跨分包边界 |
+| `usingComponents.<name>`                    | 小程序组件引用语义（支持 `/`、`./`、`../`、裸名 `miniprogram_npm`） | 路径存在 + 跨分包边界 |
 | `componentGenerics.<name>.default`          | 同上                              | 路径存在 + 跨分包边界 |
 | `pages[]`                                   | 小程序根的 page stem（不带扩展名） | 路径存在              |
 | `subpackages[].pages[]` / `subPackages[].pages[]` | `<root> + "/" + stem`             | 路径存在              |
@@ -107,6 +108,17 @@ JSON 里写别名（原生小程序不认）：
 {
   "usingComponents": {
     "foo": "@/components/foo/foo"  // → aliasNotSupported
+  }
+}
+```
+
+本地路径省略前缀：
+
+```jsonc
+// miniprogram/pages/index/index.json
+{
+  "usingComponents": {
+    "hello": "components/hello/hello"  // → relativePrefixRequired
   }
 }
 ```

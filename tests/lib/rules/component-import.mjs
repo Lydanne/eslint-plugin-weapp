@@ -37,6 +37,12 @@ ruleTester.run("component-import", rule, {
       filename: file("pages/index/index.json"),
       options: opts(),
     },
+    // 1b. requireRelativePrefix 默认开启时，合法 miniprogram_npm 裸包名仍允许
+    {
+      code: `{ "usingComponents": { "lodash": "lodash" } }`,
+      filename: file("pages/index/index.json"),
+      options: opts(),
+    },
     // 2. 相对路径
     {
       code: `{ "usingComponents": { "hello": "../../components/hello/hello" } }`,
@@ -204,7 +210,19 @@ ruleTester.run("component-import", rule, {
       options: opts(),
       errors: [{ messageId: "aliasNotSupported" }],
     },
-    // 10. projectConfigPath 指向不存在文件 → Document 级报错
+    // 10. requireRelativePrefix 默认开启：不允许把本地路径写成裸路径
+    {
+      code: `{ "usingComponents": { "hello": "components/hello/hello" } }`,
+      filename: file("pages/index/index.json"),
+      options: opts(),
+      errors: [
+        {
+          messageId: "relativePrefixRequired",
+          data: { request: "components/hello/hello" },
+        },
+      ],
+    },
+    // 11. projectConfigPath 指向不存在文件 → Document 级报错
     {
       code: `{ "usingComponents": { "x": "/x" } }`,
       filename: file("pages/index/index.json"),

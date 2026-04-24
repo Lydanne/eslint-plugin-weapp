@@ -74,6 +74,7 @@ module.exports = [
 | `checks.mainImportSubpackage` | `boolean`  | `true`                                     | 关闭后不再报"主包 → 分包"                                                   |
 | `checks.crossSubpackage`      | `boolean`  | `true`                                     | 关闭后不再报"分包 A → 分包 B"                                               |
 | `checks.independentCross`     | `boolean`  | `true`                                     | 关闭后不再报"独立分包 → 外部"                                               |
+| `requireRelativePrefix`       | `boolean`  | `true`                                     | 本地路径必须显式写 `./`、`../` 或 `/`；合法 `miniprogram_npm` 裸包名与 alias 不受影响 |
 | `ignorePatterns`              | `string[]` | `[]`                                       | 正则源码数组，命中任一者对该引用完全静默（详见下文）                        |
 
 ## 路径别名（resolveAlias）
@@ -163,6 +164,9 @@ WXS 违规：
 require("/utils/shared.wxs"); // 必须是相对路径
 require("@/utils/shared.wxs"); // WXS 不支持 resolveAlias
 require("./util"); // 只按 .wxs 解析，不会兜到同名 .js
+
+// JS 本地引用默认也必须显式写前缀
+require("utils/util"); // 必须写 ./utils/util、../utils/util 或 /utils/util
 ```
 
 ## 分包异步化（Async Subpackage Loading）

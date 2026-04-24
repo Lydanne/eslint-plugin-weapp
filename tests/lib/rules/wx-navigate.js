@@ -64,6 +64,12 @@ ruleTester.run("wx-navigate", rule, {
       filename: file("pages/index/index.js"),
       options: opts(),
     },
+    // 4d. 显式关闭 requireRelativePrefix 时允许裸相对跳转
+    {
+      code: "wx.navigateTo({ url: 'detail' });",
+      filename: file("pages/detail/detail.js"),
+      options: opts({ requireRelativePrefix: false }),
+    },
     // 5. 动态 url（非字面量）→ 跳过
     {
       code: "wx.navigateTo({ url });",
@@ -239,6 +245,18 @@ ruleTester.run("wx-navigate", rule, {
       filename: file("pages/index/index.js"),
       options: opts({ apis: ["navigateTo", "customNavigate"] }),
       errors: [{ messageId: "notResolved" }],
+    },
+    // 9. requireRelativePrefix 默认开启：不允许省略 ./ 的相对跳转
+    {
+      code: "wx.navigateTo({ url: 'detail' });",
+      filename: file("pages/detail/detail.js"),
+      options: opts(),
+      errors: [
+        {
+          messageId: "relativePrefixRequired",
+          data: { request: "detail" },
+        },
+      ],
     },
   ],
 });

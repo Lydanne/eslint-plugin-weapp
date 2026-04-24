@@ -101,6 +101,12 @@ ruleTester.run("wxss-import", rule, {
       code: `@import "/styles/common.wxss";`,
       filename: file("pages/index/index.wxss"),
     },
+    // 14. 显式关闭 requireRelativePrefix 时允许同目录写法
+    {
+      code: `@import "index.wxss";`,
+      filename: file("pages/index/index.wxss"),
+      options: opts({ requireRelativePrefix: false }),
+    },
   ],
 
   invalid: [
@@ -165,7 +171,19 @@ ruleTester.run("wxss-import", rule, {
       options: opts(),
       errors: [{ messageId: "notResolved" }],
     },
-    // 8. projectConfigPath 指向不存在文件 → 根节点级报
+    // 8. requireRelativePrefix 默认开启：不允许省略 ./ 的同目录写法
+    {
+      code: `@import "index.wxss";`,
+      filename: file("pages/index/index.wxss"),
+      options: opts(),
+      errors: [
+        {
+          messageId: "relativePrefixRequired",
+          data: { request: "index.wxss" },
+        },
+      ],
+    },
+    // 9. projectConfigPath 指向不存在文件 → 根节点级报
     {
       code: `@import "/x.wxss";`,
       filename: file("pages/index/index.wxss"),

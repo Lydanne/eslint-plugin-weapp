@@ -71,6 +71,12 @@ ruleTester.run("import", rule, {
       filename: file("pages/index/index.js"),
       options: opts(),
     },
+    // 7b. requireRelativePrefix 默认开启时，合法 miniprogram_npm 裸包名仍允许
+    {
+      code: "import _ from 'lodash';",
+      filename: file("pages/index/index.js"),
+      options: opts(),
+    },
     // 8. 动态 import()
     {
       code: "import('/utils/util');",
@@ -361,6 +367,18 @@ ruleTester.run("import", rule, {
         {
           messageId: "notResolved",
           data: { request: "./util" },
+        },
+      ],
+    },
+    // 21. requireRelativePrefix 默认开启：不允许把本地路径写成裸路径
+    {
+      code: "require('utils/util');",
+      filename: file("pages/index/index.js"),
+      options: opts(),
+      errors: [
+        {
+          messageId: "relativePrefixRequired",
+          data: { request: "utils/util" },
         },
       ],
     },

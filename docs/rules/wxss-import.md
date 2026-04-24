@@ -65,6 +65,7 @@ module.exports = [
 | `extensions`             | `string[]` | `['.wxss']`                  | `@import` 省略扩展名时的补全顺序（如需支持 `.css` 自行追加） |
 | `checks.pathExists`      | `boolean`  | `true`                       | 关闭后不再报未解析错误                      |
 | `checks.packageBoundary` | `boolean`  | `true`                       | 关闭后不再校验跨分包                        |
+| `requireRelativePrefix`  | `boolean`  | `true`                       | 同目录 `@import` 必须写 `./foo.wxss`，不允许省略为 `foo.wxss`；设为 `false` 可兼容裸同目录写法 |
 | `ignorePatterns`         | `string[]` | `[]`                         | 正则源码数组，匹配 `@import` 路径原始字符串；命中任一即整条跳过。语义同 [`weapp2/import#ignorepatterns`](./import.md#ignorepatterns) |
 
 ## 检查项
@@ -86,6 +87,7 @@ module.exports = [
 /* miniprogram/pages/index/index.wxss */
 @import "/styles/common.wxss";
 @import "../../styles/theme.wxss";
+@import "./index.wxss";
 /* 注意：原生 WXSS 不支持 `@/...` 别名；写了会被报 aliasNotSupported */
 @import url("/styles/common.wxss");  /* url() 形态 */
 ```
@@ -105,6 +107,11 @@ module.exports = [
 ```css
 /* miniprogram/subInd/pages/i1/i1.wxss  (独立分包) */
 @import "/styles/common.wxss";       /* 独立分包不能引用外部 */
+```
+
+```css
+/* 默认必须显式写 ./ */
+@import "index.wxss";                /* relativePrefixRequired */
 ```
 
 ## 局限

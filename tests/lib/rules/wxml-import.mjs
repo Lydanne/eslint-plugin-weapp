@@ -65,11 +65,11 @@ ruleTester.run("wxml-import", rule, {
       filename: file("utils/main.wxml"),
       options: opts(),
     },
-    // 5b. <import> 同目录写法
+    // 5b. 显式关闭 requireRelativePrefix 时允许同目录写法
     {
       code: `<import src="index.skeleton.wxml"/>`,
       filename: file("pages/index/index.wxml"),
-      options: opts(),
+      options: opts({ requireRelativePrefix: false }),
     },
     // 7. 动态绑定 {{}} → 规则跳过
     {
@@ -126,6 +126,16 @@ ruleTester.run("wxml-import", rule, {
     {
       code: `<import src="/templates/base.wxml"/>`,
       filename: file("pages/index/index.wxml"),
+    },
+    // 16. requireRelativePrefix 默认开启：显式 ./、../、/ 都合法
+    {
+      code: `
+        <import src="./index.skeleton.wxml"/>
+        <include src="../../templates/slot.wxml"/>
+        <wxs src="/utils/shared.wxs" module="u"/>
+      `,
+      filename: file("pages/index/index.wxml"),
+      options: opts(),
     },
   ],
 
@@ -218,7 +228,36 @@ ruleTester.run("wxml-import", rule, {
       options: opts(),
       errors: [{ messageId: "aliasNotSupported" }],
     },
-    // 9. projectConfigPath 指向不存在文件 → Program 级报错
+    // 9. requireRelativePrefix 默认开启：不允许省略 ./ 的同目录写法
+    {
+      code: `<import src="index.skeleton.wxml"/>`,
+      filename: file("pages/index/index.wxml"),
+      options: opts(),
+      errors: [
+        {
+          messageId: "relativePrefixRequired",
+          data: {
+            request: "index.skeleton.wxml",
+            tag: "<import>",
+          },
+        },
+      ],
+    },
+    {
+      code: `<wxs src="shared" module="u"/>`,
+      filename: file("utils/main.wxml"),
+      options: opts(),
+      errors: [
+        {
+          messageId: "relativePrefixRequired",
+          data: {
+            request: "shared",
+            tag: "<wxs>",
+          },
+        },
+      ],
+    },
+    // 10. projectConfigPath 指向不存在文件 → Program 级报错
     {
       code: `<import src="/whatever.wxml"/>`,
       filename: file("pages/index/index.wxml"),

@@ -57,6 +57,7 @@ module.exports = [
 | `miniprogramRoot`        | `string`   | 解析后的 `app.json` 所在目录   | 自定义小程序根                |
 | `checks.pathExists`      | `boolean`  | `true`                        | 关闭后不再报未解析错误        |
 | `checks.packageBoundary` | `boolean`  | `true`                        | 关闭后不再校验跨分包          |
+| `requireRelativePrefix`  | `boolean`  | `true`                        | 同目录引用必须写 `./foo.wxml` / `./foo.wxs`，不允许省略为 `foo.wxml`；设为 `false` 可兼容裸同目录写法 |
 | `ignorePatterns`         | `string[]` | `[]`                          | 正则源码数组，匹配 `src` 原始字符串；命中任一即整条跳过。语义同 [`weapp2/import#ignorepatterns`](./import.md#ignorepatterns) |
 
 此规则不接受 `extensions` 选项：
@@ -68,7 +69,7 @@ module.exports = [
 
 ## 检查项
 
-1. **路径存在性** — `src` 指向的 `.wxml` / `.wxs` 文件能否解析（支持 `/`、`./`、`../`，以及 `foo.wxml` / `foo.wxs` 这类同目录写法）。
+1. **路径存在性** — `src` 指向的 `.wxml` / `.wxs` 文件能否解析（支持 `/`、`./`、`../`；`requireRelativePrefix: false` 时也支持 `foo.wxml` / `foo.wxs` 这类同目录写法）。
 2. **跨分包边界**：
    - 主包 WXML ↛ 分包资源
    - 分包 A ↛ 分包 B
@@ -83,7 +84,7 @@ module.exports = [
 <!-- miniprogram/pages/index/index.wxml -->
 <import src="/templates/base.wxml"/>
 <import src="../../templates/base"/>           <!-- 省略扩展名 -->
-<import src="index.skeleton.wxml"/>            <!-- 同目录写法 -->
+<import src="./index.skeleton.wxml"/>          <!-- 同目录写法需显式 ./ -->
 <!-- 注意：原生 WXML 不支持 `@/...` 别名，写了会被报 aliasNotSupported -->
 <include src="/templates/slot.wxml"/>
 <wxs src="../../utils/shared.wxs" module="u"/>
@@ -112,6 +113,7 @@ module.exports = [
 <!-- 任何 .wxml -->
 <import src="/no/where.wxml"/>                  <!-- notResolved -->
 <wxs src="./ghost" module="u"/>                 <!-- 省略扩展名也解析不到 -->
+<import src="index.skeleton.wxml"/>             <!-- 默认必须写 ./index.skeleton.wxml -->
 ```
 
 ## 局限

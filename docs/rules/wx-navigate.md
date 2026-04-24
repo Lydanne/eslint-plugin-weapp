@@ -74,6 +74,7 @@ module.exports = [
 | `checks.mainImportSubpackage` | `boolean` | `true`                                                  | 关闭后不再报"主包 → 分包"                                      |
 | `checks.crossSubpackage` | `boolean`  | `true`                                                      | 关闭后不再报"分包 A → 分包 B"                                  |
 | `checks.independentCross` | `boolean` | `true`                                                      | 关闭后不再报"独立分包 → 外部"                                  |
+| `requireRelativePrefix`  | `boolean`  | `true`                                                      | 相对跳转必须显式写 `./` 或 `../`，不允许省略为 `detail`；设为 `false` 可兼容裸相对跳转 |
 | `ignorePatterns`         | `string[]` | `[]`                                                        | 正则源码数组，匹配 `url` 原始字符串；命中任一即整条跳过。语义同 [`weapp2/import#ignorepatterns`](./import.md#ignorepatterns) |
 
 ### 扩展 `apis`：覆盖自定义跳转封装
@@ -96,6 +97,7 @@ module.exports = [
 // miniprogram/pages/index/index.js （主包）
 wx.navigateTo({ url: "/pages/not/found" });         // notResolved
 wx.redirectTo({ url: "/subA/pages/a1/a1" });        // mainImportSubpackage
+wx.navigateTo({ url: "detail" });                   // relativePrefixRequired
 
 // miniprogram/subA/pages/a1/a1.js （分包 A）
 wx.switchTab({ url: "/subB/pages/b1/b1" });         // crossSubpackage
@@ -110,6 +112,7 @@ wx.reLaunch({ url: "/pages/index/index" });         // independentCross
 // 带 query / hash
 wx.navigateTo({ url: "/pages/detail/detail?id=1" });
 wx.navigateTo({ url: "/pages/detail/detail#foo" });
+wx.navigateTo({ url: "../detail/detail" });
 
 // 分包 → 主包（非独立）允许
 wx.navigateTo({ url: "/pages/index/index" });
