@@ -98,13 +98,7 @@ ruleTester.run("wx-navigate", rule, {
       filename: file("pages/index/index.js"),
       options: opts(),
     },
-    // 8. 动态 url 走 alias 后指向合法主包页面
-    {
-      code: "wx.navigateTo({ url: '@/pages/detail/detail' });",
-      filename: file("pages/index/index.js"),
-      options: opts(),
-    },
-    // 9. 文件不在 miniprogramRoot 下 → 跳过
+    // 8. 文件不在 miniprogramRoot 下 → 跳过
     {
       code: "wx.navigateTo({ url: '/pages/not/found' });",
       filename: path.resolve(__dirname, "../../fixtures/outside.js"),
@@ -122,31 +116,31 @@ ruleTester.run("wx-navigate", rule, {
       filename: file("pages/index/index.js"),
       options: opts({ apis: ["navigateTo"] }),
     },
-    // 12. 禁用所有检查 → 不报
+    // 12. 禁用 pathExists 检查 → 不报
     {
       code: "wx.navigateTo({ url: '/pages/not-found/not-found' });",
       filename: file("pages/index/index.js"),
       options: opts({
-        checks: { pathExists: false, packageBoundary: false },
+        checks: { pathExists: false },
       }),
     },
-    // 13a. 关闭 crossSubpackage 子开关后：分包 → 分包 静默
+    // 13a. 分包 A → 分包 B：运行时允许，规则不报
     {
       code: "wx.switchTab({ url: '/subB/pages/b1/b1' });",
       filename: file("subA/pages/a1/a1.js"),
-      options: opts({ checks: { crossSubpackage: false } }),
+      options: opts(),
     },
-    // 13b. 关闭 mainImportSubpackage 子开关后：主包 → 分包 静默
+    // 13b. 主包 → 分包：运行时允许，规则不报
     {
       code: "wx.redirectTo({ url: '/subA/pages/a1/a1' });",
       filename: file("pages/index/index.js"),
-      options: opts({ checks: { mainImportSubpackage: false } }),
+      options: opts(),
     },
-    // 13c. 关闭 independentCross 子开关后：独立分包 → 外部 静默
+    // 13c. 独立分包 → 主包：运行时允许，规则不报
     {
       code: "wx.reLaunch({ url: '/pages/index/index' });",
       filename: file("subInd/pages/i1/i1.js"),
-      options: opts({ checks: { independentCross: false } }),
+      options: opts(),
     },
     // 14. ignorePatterns：匹配到的 url 整条跳过
     {
@@ -188,44 +182,55 @@ ruleTester.run("wx-navigate", rule, {
       options: opts(),
       errors: [{ messageId: "notResolved" }],
     },
-    // 2. 主包 → 分包
+    // 2. `@/...` 在运行时不被视为有效的绝对/相对路径，不走 alias 展开 → relativePrefixRequired
     {
-      code: "wx.redirectTo({ url: '/subA/pages/a1/a1' });",
+      code: "wx.navigateTo({ url: '@/pages/detail/detail' });",
       filename: file("pages/index/index.js"),
       options: opts(),
-      errors: [{ messageId: "mainImportSubpackage" }],
+      errors: [
+        {
+          messageId: "relativePrefixRequired",
+          data: { request: "@/pages/detail/detail" },
+        },
+      ],
     },
-    // 3. 分包 → 分包
+    // 2b. alias 写法指向分包页面 → 同样被 `relativePrefixRequired` 拦住
     {
-      code: "wx.switchTab({ url: '/subB/pages/b1/b1' });",
-      filename: file("subA/pages/a1/a1.js"),
+      code: "wx.redirectTo({ url: '@/subA/pages/a1/a1' });",
+      filename: file("pages/index/index.js"),
       options: opts(),
-      errors: [{ messageId: "crossSubpackage" }],
+      errors: [
+        {
+          messageId: "relativePrefixRequired",
+          data: { request: "@/subA/pages/a1/a1" },
+        },
+      ],
     },
-    // 4. 独立分包 → 主包
-    {
-      code: "wx.reLaunch({ url: '/pages/index/index' });",
-      filename: file("subInd/pages/i1/i1.js"),
-      options: opts(),
-      errors: [{ messageId: "independentCross" }],
-    },
-    // 5. alias 展开后仍不存在 → notResolved，带原始 request
+    // 2c. alias 指向不存在页面 → 仍然被 `relativePrefixRequired` 拦住
     {
       code: "wx.navigateTo({ url: '@/pages/not/found' });",
       filename: file("pages/index/index.js"),
       options: opts(),
       errors: [
-        { messageId: "notResolved", data: { request: "@/pages/not/found" } },
+        {
+          messageId: "relativePrefixRequired",
+          data: { request: "@/pages/not/found" },
+        },
       ],
     },
-    // 6. alias 展开后穿越分包边界 → mainImportSubpackage
+    // 2d. 关闭 requireRelativePrefix 后，`@/...` 回落到 pathExists 检查 → notResolved
     {
-      code: "wx.redirectTo({ url: '@/subA/pages/a1/a1' });",
+      code: "wx.navigateTo({ url: '@/pages/detail/detail' });",
       filename: file("pages/index/index.js"),
-      options: opts(),
-      errors: [{ messageId: "mainImportSubpackage" }],
+      options: opts({ requireRelativePrefix: false }),
+      errors: [
+        {
+          messageId: "notResolved",
+          data: { request: "@/pages/detail/detail" },
+        },
+      ],
     },
-    // 7. projectConfigPath 指向不存在文件 → 文件级报一次
+    // 3. projectConfigPath 指向不存在文件 → 文件级报一次
     {
       code: "wx.navigateTo({ url: '/pages/index/index' });",
       filename: file("pages/index/index.js"),
@@ -239,14 +244,14 @@ ruleTester.run("wx-navigate", rule, {
       ],
       errors: [{ messageId: "appJsonNotFound" }],
     },
-    // 8. apis 选项扩展：支持自定义跳转函数
+    // 4. apis 选项扩展：支持自定义跳转函数
     {
       code: "wx.customNavigate({ url: '/pages/not/found' });",
       filename: file("pages/index/index.js"),
       options: opts({ apis: ["navigateTo", "customNavigate"] }),
       errors: [{ messageId: "notResolved" }],
     },
-    // 9. requireRelativePrefix 默认开启：不允许省略 ./ 的相对跳转
+    // 5. requireRelativePrefix 默认开启：不允许省略 ./ 的相对跳转
     {
       code: "wx.navigateTo({ url: 'detail' });",
       filename: file("pages/detail/detail.js"),
