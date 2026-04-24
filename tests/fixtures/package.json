@@ -1,0 +1,10 @@
+{
+  "name": "test-miniprogram",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "lodash": "^4.17.21",
+    "@wekit/shared": "^1.0.0",
+    "@scope/only-declared": "^1.0.0"
+  }
+}

@@ -5,6 +5,7 @@ const { RuleTester } = require("eslint");
 
 require("../../../lib");
 const { clearCache } = require("../../../lib/import/app-json");
+const { clearCache: clearPackageJsonCache } = require("../../../lib/import/package-json");
 const rule = require("../../../lib/rules/import");
 
 const ROOT = path.resolve(__dirname, "../../fixtures/miniprogram");
@@ -25,8 +26,9 @@ const ruleTester = new RuleTester({
   },
 });
 
-// 每次跑前清空 app.json 缓存，避免并行 mocha 进程状态互相干扰
+// 每次跑前清空 app.json / package.json 缓存，避免并行 mocha 进程状态互相干扰
 clearCache();
+clearPackageJsonCache();
 
 ruleTester.run("import", rule, {
   valid: [
@@ -65,11 +67,30 @@ ruleTester.run("import", rule, {
       filename: file("pages/index/index.js"),
       options: opts(),
     },
-    // 7b. requireRelativePrefix 默认开启时，合法 miniprogram_npm 裸包名仍允许
+    // 7b. 默认 packageJson 模式：package.json 里声明了 lodash 依赖 → 合法
     {
       code: "import _ from 'lodash';",
       filename: file("pages/index/index.js"),
       options: opts(),
+    },
+    // 7c. 默认 packageJson 模式：scoped 包只在 package.json 中声明
+    //     （miniprogram_npm 里没有；miniprogramNpm 模式下这条应该报错，见 invalid 侧）
+    {
+      code: "import { foo } from '@wekit/shared';",
+      filename: file("pages/index/index.js"),
+      options: opts(),
+    },
+    // 7d. 默认 packageJson 模式：scoped 包 + 子路径
+    {
+      code: "require('@wekit/shared/sub/path');",
+      filename: file("pages/index/index.js"),
+      options: opts(),
+    },
+    // 7e. miniprogramNpm 模式（显式切回旧行为）：lodash 真实存在于 miniprogram_npm → 合法
+    {
+      code: "const _ = require('lodash');",
+      filename: file("pages/index/index.js"),
+      options: opts({ bareModuleResolution: "miniprogramNpm" }),
     },
     // 8. 动态 import() 配合 alias
     {
@@ -422,6 +443,32 @@ ruleTester.run("import", rule, {
         {
           messageId: "relativePrefixRequired",
           data: { request: "utils/util" },
+        },
+      ],
+    },
+    // 22. 默认 packageJson 模式：未在 package.json 声明的裸包名 → relativePrefixRequired
+    //     这里 miniprogram_npm 里也不存在 'not-declared-pkg'
+    {
+      code: "import x from 'not-declared-pkg';",
+      filename: file("pages/index/index.js"),
+      options: opts(),
+      errors: [
+        {
+          messageId: "relativePrefixRequired",
+          data: { request: "not-declared-pkg" },
+        },
+      ],
+    },
+    // 23. miniprogramNpm 模式：scoped 包 package.json 里有声明，但 miniprogram_npm 里没有 → 按旧语义报错
+    //     用来对照 valid 7c：同一个 request 在两种模式下结论不同
+    {
+      code: "import { foo } from '@wekit/shared';",
+      filename: file("pages/index/index.js"),
+      options: opts({ bareModuleResolution: "miniprogramNpm" }),
+      errors: [
+        {
+          messageId: "relativePrefixRequired",
+          data: { request: "@wekit/shared" },
         },
       ],
     },
